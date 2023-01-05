@@ -21,8 +21,8 @@ or use `install.sh` like following:
 
 ```Shell
 $ chmod a+x install.sh
-$ install.sh /path/to/directory/of/all/src_files \
-    /path/to/store/compiled/binary_files
+$ install.sh /path/to/src \
+    /path/to/bins
 ```
 * NCBI Blast+ (suggest 2.12 or higher) <br>
 
