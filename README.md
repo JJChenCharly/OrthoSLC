@@ -149,7 +149,7 @@ options:
  -h or --help ----------------> display this information
 ```
 
-In case you have installed your blast but not exported to `$PATH`, you can simply input `whereis blastn` or `whereis makeblastdb` to get the full path to your blast binary file.<br>
+In case you have installed your blast but not exported to `$PATH`, you need to provide path to your blast binary file.<br>
 
 The reason to BLAST against each database sequentially rather than directly using an all-vs-all approach is to 
 reduce computational overhead. This can be very useful if the task involves many genomes. For example, if you have 1000 dereplicated genomes to analyze, the total size of concatenated FASTA may reach 5-10 GB. A multi-threaded BLAST job using the `-mt_mode 1` by all-vs-all style could be too memory-intensive to run for such a large dataset.
