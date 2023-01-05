@@ -194,7 +194,7 @@ However, if a query $a$ and its best suject hit $b$, passed filter above, and fo
 <font color="red">**Set bin level:**</font><br>
 According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. Level $L$ should be interger of range $0 < L \le 9999$, and will generate $L$ bins. 
 
-Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level fomr 10 to 100 should work as most efficient way. 
+Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level from 10 to 100 should work as most efficient way. 
 
 As tested, an analysis of 30 genomes: 
 * A bin level of 10, takes 1.35 seconds to finish, 
