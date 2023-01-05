@@ -204,7 +204,7 @@ As tested, an analysis of 30 genomes:
 <font color="red">**When to set a high bin level:**</font><br>
 Simply speaking, when you have really larger amount of genomes and not enough memory (e.g., more than 1000 genomes and less than 64 GB memory) <br>
 
-The output of BLAST for 1000 genomes can reach 200 GB in size, and if the bin level is set to 2, there will be 100 bins to evenly distribute the data. On average, each bin will contain 1.7 GB of data, which may be too memory-intensive to process in step 6, where reciprocal find is performed (which requires approximately 1.7 GB of memory per bin). However, if the number of bins is increased to 1000, the size of each bin will be reduced to between 100-200 MB, which then facilitate step 6 parallelization.
+The output of BLAST for 1000 genomes can reach 200 GB in size, and if the bin level is set to 100, there will be 100 bins to evenly distribute the data. On average, each bin will contain 1.7 GB of data, which may be too memory-intensive to process in step 6, where reciprocal find is performed (which requires approximately 1.7 GB of memory per bin). However, if the number of bins is increased to 1000, the size of each bin will be reduced to between 100-200 MB, which then facilitate step 6 parallelization.
 
 <font color="red">**Note:**</font><br>
 This is the one of the most computation and I/O intensive step, use the C++ based binary file to process for better efficiency.
