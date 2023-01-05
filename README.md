@@ -34,7 +34,7 @@ The programs uses [A simple C++ Thread Pool implementation](https://github.com/p
 Comparing with `0.1Alpha`, current version `0.1Beta` allow users to set `bin level`, in Step 5 and Step 6, with a linear style instead of exponatial style.
 
 **Note:**<br>
-For all steps, users do not need to make the ourput directory manually, program will do that for you.
+For all steps, users do not need to make the output directory manually, program will do that for you.
 
 Bug report: 
 * <jingjie.chencharly@gmail.com>
