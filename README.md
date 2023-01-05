@@ -39,6 +39,8 @@ For all steps, users do not need to make the output directory manually, program 
 Bug report: 
 * <jingjie.chencharly@gmail.com>
 
+![My Image](./workflow.jpg)
+
 ## Step 1 Genome information preparation
 The pipeline starts with annotated genomes in fasta format. FASTA file name require strain name and extension (e.g., `strain_A.ffn`, `strain_B.fna`, `strain_C.fasta` etc.).<br> 
 Step 1 needs the **path to directory of annotated FASTA files** as input, to genereate a header less, tab separated table, in which the 
