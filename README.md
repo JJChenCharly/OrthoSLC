@@ -161,7 +161,7 @@ This step is to filter the blast output and to apply hash binning, in order to p
 
 Step 5 requires **path to directory of BLAST tabular output as input**, **sequence length information output by Step 3**.
 
-you may run Step5_filter_n_bin like following:
+you may run `Step5_filter_n_bin` like following:
 ```Shell
 Usage: Step5_filter_n_bin -i input/ -o output/ -s seq_len_info.txt [options...]
 
@@ -178,7 +178,7 @@ The pipeline will carry out following treatment to BLAST output:
 1. Paralog removal: <br>
 If query and subject is from same strain, the hit will be skipped, as to remove paralog.
 2. Length ratio filtering:<br>
-Within a hit, query length $Q$ and subject length $S$, the ratio $v$ of this 2 length
+Within a hit, query length $Q$ and subject length $S$, the ratio $v$ of the 2 parameter
 
 $$v = \frac{Q}{S}$$
 
