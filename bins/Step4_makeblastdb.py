@@ -45,7 +45,7 @@ for opt, arg in opts:
     elif opt in ['-t', '--dbtype']:
         dbt = arg
     elif opt in ['-h', '--help']:
-        print("Thanks for using OrthoSLC! (version: 0.1Alpha)\n")
+        print("Thanks for using OrthoSLC! (version: 0.1Beta)\n")
         print("Usage: python Step4_makeblastdb.py -i input/ -o output/ [options...]\n")
         print("options:\n")
         print(" -i or --input_path ----------> path/to/input/directory")
