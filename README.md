@@ -28,7 +28,7 @@ $ install.sh /path/to/directory/of/all/src_files \
 
 Besides callable binary files, we also provide an "all-in-one" Jupyter notebook interface `OrthoSLC_Python_jupyter_interface.ipynb`. It is s relatively slow but fits small sclae analysis and allow users to do customized analysis and modification in between pipeline steps. However, for datasets with 500 or more genomes, we still recommend using the binary files, which is mainly written in C++, for optimal performance.
 
-The programs uses [A simple C++ Thread Pool implementation](https://github.com/progschj/ThreadPool), and sincere thanks to [contributors](https://github.com/progschj/ThreadPool/graphs/contributors).
+The programs uses [A simple C++ Thread Pool implementation](https://github.com/progschj/ThreadPool), and sincere thanks to [its contributors](https://github.com/progschj/ThreadPool/graphs/contributors).
 
 **Version change**:<br>
 Comparing with `0.1Alpha`, current version `0.1Beta` allow users to set `bin level`, in Step 5 and Step 6, with a linear style instead of exponatial style.
