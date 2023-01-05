@@ -48,7 +48,7 @@ for opt, arg in opts:
     elif opt in ['-u', '--blast_thread_num']:
         process_number = arg
     elif opt in ['-h', '--help']:
-        print("Thanks for using OrthoSLC! (version: 0.1Alpha)\n")
+        print("Thanks for using OrthoSLC! (version: 0.1Beta)\n")
         print("Usage: python Step4_reciprocal_blast.py -i query.fasta -o output/ -d directory_of_dbs/ [options...]\n")
         print("options:\n")
         print(" -i or --query ---------------> path/to/concatenated.fasta")

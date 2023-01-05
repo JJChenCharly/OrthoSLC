@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
         }
         else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
         {
-            std::cout << "Thanks for using OrthoSLC! (version: 0.1Alpha)\n\n";
+            std::cout << "Thanks for using OrthoSLC! (version: 0.1Beta)\n\n";
             std::cout << "Usage: Step2_simple_derep -i input_file -o output/ [options...]\n\n";
             std::cout << "  -i or --input_path -------> path/to/file/output/by/Step1\n";
             std::cout << "  -o or --output_path ------> path/to/output/directory\n";

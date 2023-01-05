@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     std::string blast_op_pth;
     std::string bin_op_pth;
     std::string seq_len_pth;
-    int bin_level = 2;
+    int bin_level = 10;
     double r_ = 0.3;
     int process_num = 1;
 
@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
         else if (std::string(argv[i]) == "--bin_level" || std::string(argv[i]) == "-L")
         {
             bin_level = std::stoi(argv[i + 1]);
-            if(bin_level > 4) {
-                std::cerr << "-L or --bin_level must be less than 4";
+            if((bin_level < 0) | (bin_level > 9999)) {
+                std::cerr << "-L or --bin_level must be integer 0 < L <= 9999";
                 exit(0);
             }
         }
@@ -55,13 +55,13 @@ int main(int argc, char** argv) {
         }
         else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
         {
-            std::cout << "Thanks for using OrthoSLC! (version: 0.1Alpha)\n\n";
+            std::cout << "Thanks for using OrthoSLC! (version: 0.1Beta)\n\n";
             std::cout << "Usage: Step5_filter_n_bin -i input/ -o output/ -s seq_len_info.txt [options...]\n\n";
             std::cout << "  -i or --input_path -------> path/to/input/directory\n";
             std::cout << "  -o or --output_path ------> path/to/output/directory\n";
             std::cout << "  -s or --seq_len_path -----> path/to/output/seq_len_info.txt\n";
             std::cout << "  -u or --thread_number ----> thread number, default: 1\n";
-            std::cout << "  -L or --bin_level --------> binning level, an intger 0 < L <= 4 , default: 2, means 100 bins\n";
+            std::cout << "  -L or --bin_level --------> binning level, an intger 0 < L <= 9999 , default: 10\n";
             std::cout << "  -r or --length_limit -----> length difference limit, default: 0.3\n";
             std::cout << "  -h or --help -------------> display this information\n";
             exit(0);
@@ -105,8 +105,7 @@ int main(int argc, char** argv) {
 
     // mt ----
     // mutex each op file
-    double bin_nums = pow(10.0, bin_level);
-    std::mutex op_mutex[static_cast<int>(bin_nums)];
+    std::mutex op_mutex[bin_level];
 
     ThreadPool pool(process_num);
 
@@ -194,11 +193,9 @@ int main(int argc, char** argv) {
                 }
                 
                 size_t h = hash_fn(p_to_s);
-                std::stringstream h_to_str;
-                h_to_str << h;
-                std::string h_str = h_to_str.str();
+                int b = h % b_level;
 
-                std::string its_bin = h_str.substr(h_str.length() - b_level);
+                std::string its_bin = std::to_string(b);
 
                 bins_to_save[its_bin].push_back(p_to_s);
 

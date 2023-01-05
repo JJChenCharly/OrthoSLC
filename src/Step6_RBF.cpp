@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     std::string bin_op_dir_pth;
     std::string RBB_op_dir_pth;
     int process_num = 1;
-    int bin_level = 2;
+    int bin_level = 10;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -36,19 +36,19 @@ int main(int argc, char** argv) {
         else if (std::string(argv[i]) == "--bin_level" || std::string(argv[i]) == "-L")
         {
             bin_level = std::stoi(argv[i + 1]);
-            if(bin_level > 4) {
-                std::cerr << "-L or --bin_level must be less than 4";
+            if((bin_level < 0) | (bin_level > 9999)) {
+                std::cerr << "-L or --bin_level must be integer 0 < L <= 9999";
                 exit(0);
             }
         }
         else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
         {
-            std::cout << "Thanks for using OrthoSLC! (version: 0.1Alpha)\n\n";
+            std::cout << "Thanks for using OrthoSLC! (version: 0.1Beta)\n\n";
             std::cout << "Usage: Step6_RBF -i input/ -o output/ [options...]\n\n";
             std::cout << "  -i or --input_path -------> path/to/input/directory\n";
             std::cout << "  -o or --output_path ------> path/to/output/directory\n";
             std::cout << "  -u or --thread_number ----> thread number, default: 1\n";
-            std::cout << "  -L or --bin_level --------> binning level, an intger 0 < L <= 4 , default: 2, means 100 bins\n";
+            std::cout << "  -L or --bin_level --------> binning level, an intger 0 < L <= 9999 , default: 10\n";
             std::cout << "  -h or --help -------------> display this information\n";
             exit(0);
         }
@@ -71,8 +71,7 @@ int main(int argc, char** argv) {
     // mt ----
     ThreadPool pool(process_num);
 
-    double bin_nums = pow(10.0, bin_level);
-    std::mutex op_mutex[static_cast<int>(bin_nums)];
+    std::mutex op_mutex[bin_level];
 
     for(int i = 0; i < mission_lst.size(); ++i) {
         std::string* op = &RBB_op_dir_pth;
@@ -95,11 +94,9 @@ int main(int argc, char** argv) {
                     std::getline(std::stringstream(a_line), first, '\t');
 
                     size_t h = hash_fn(first);
-                    std::stringstream h_to_str;
-                    h_to_str << h;
-                    std::string h_str = h_to_str.str();
+                    int b = h % b_level;
 
-                    std::string its_bin = h_str.substr(h_str.length() - b_level);
+                    std::string its_bin = std::to_string(b);
 
                     bins_to_save[its_bin].push_back(a_line);
                     

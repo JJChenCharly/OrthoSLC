@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         }
         else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
         {
-            std::cout << "Thanks for using OrthoSLC! (version: 0.1Alpha)\n\n";
+            std::cout << "Thanks for using OrthoSLC! (version: 0.1Beta)\n\n";
             std::cout << "Usage: Step8_write_clusters -i input_path -o output/ -f concatenated.fasta [options...]\n\n";
             std::cout << "options:\n";
             std::cout << "  -i or --input_path ------> path/to/input/cluster_file\n";
