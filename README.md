@@ -229,7 +229,7 @@ Usage: Step6_RBF -i input/ -o output/ [options...]
 ```
 
 <font color="red">**Set bin level:**</font><br>
-According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. evel $L$ should be interger of range  $0 < L \le 9999$, and will generate $L$ bins. 
+According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. Level $L$ should be interger of range  $0 < L \le 9999$, and will generate $L$ bins. 
 
 Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level from 10 to 100 should work as most efficient way. 
 
