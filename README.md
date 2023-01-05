@@ -1,6 +1,10 @@
-# Readme OrthoSLC (0.1Alpha)
+# Readme OrthoSLC (0.1Beta)
 
 **OrthoSLC** is a pipline that perfomrs Reciprocal Best Blast Hit (RBBH) Single Linkage Clustering to obtain Orthologous Genes. <br>
+
+**Version change**:<br>
+Comparing with `0.1Alpha`, current version `0.1Beta` allow users to set `bin level`, in Step 5 and Step 6, with a linear style instead of exponatial style.
+
 It is: <br>
 * lightweight, convenient to install
 * **independent** of relational database management systems (e.g., MySQL)
@@ -15,7 +19,7 @@ The pipeline is currently available for linux-like system only and have been tes
 
 **Requirement:**<br>
 * Python3 (suggest newest stable release or higher),<br>
-* C++17 ("must" or higher for compiling) users may directly use pre-compiled binary files.<br>
+* C++17 ("must" or higher for compiling) users may also directly use pre-compiled binary files.<br>
 or use `install.sh` like following:
 
 ```Shell
@@ -162,7 +166,7 @@ Usage: Step5_filter_n_bin -i input/ -o output/ -s seq_len_info.txt [options...]
   -o or --output_path ------> path/to/output/directory
   -s or --seq_len_path -----> path/to/output/seq_len_info.txt
   -u or --thread_number ----> thread number, default: 1
-  -L or --bin_level --------> binning level, an intger 0 < L <= 4 , default: 2, means 100 bins
+  -L or --bin_level --------> binning level, an intger 0 < L <= 9999 , default: 10
   -r or --length_limit -----> length difference limit, default: 0.3
   -h or --help -------------> display this information
 ```
@@ -188,14 +192,14 @@ For every kept hit, its query and subject will be sorted using Python or C++ bui
 However, if a query $a$ and its best suject hit $b$, passed filter above, and form $(a, b)$, and in the mean time we sort its rericprocal hit $(b, a)$ from another file into $(a, b)$, then both $(a, b)$ will generate same hash value. This hashed value with last several digits will allow us to bin them into same new file. Therefore, after this binning, "**reciprocal finding**" will be turned into "**duplication finding**" within one same file.<br>
 
 <font color="red">**Set bin level:**</font><br>
-According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. Level $L$ should be interger of range $0 < L \le 4$, and will generate $10^L$ bins. 
+According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. Level $L$ should be interger of range $0 < L \le 9999$, and will generate $L$ bins. 
 
-Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level 1 or 2 should work as most efficient way. 
+Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level 10 to 100 should work as most efficient way. 
 
 As tested, an analysis of 30 genomes: 
-* A bin level of 1, takes 1.4 seconds to finish, 
-* a bin level of 2, takes 3.5 seconds to finish,
-* a bin level of 3, takes 18.8 seconds to finish,
+* A bin level of 10, takes 1.35 seconds to finish, 
+* a bin level of 100, takes 3.38 seconds to finish,
+* a bin level of 1000, takes 17.4 seconds to finish,
 
 <font color="red">**When to set a high bin level:**</font><br>
 Simply speaking, when you have really larger amount of genomes and not enough memory (e.g., more than 1000 genomes and less than 64 GB memory) <br>
@@ -220,19 +224,19 @@ Usage: Step6_RBF -i input/ -o output/ [options...]
   -i or --input_path -------> path/to/input/directory
   -o or --output_path ------> path/to/output/directory
   -u or --thread_number ----> thread number, default: 1
-  -L or --bin_level --------> binning level, an intger 0 < L <= 4 , default: 2, means 100 bins
+  -L or --bin_level --------> binning level, an intger 0 < L <= 9999 , default: 10
   -h or --help -------------> display this information
 ```
 
 <font color="red">**Set bin level:**</font><br>
-According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. evel $L$ should be interger of range $0 < L \le 4$, and will generate $10^L$ bins. 
+According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. evel $L$ should be interger of range  $0 < L \le 9999$, and will generate $L$ bins. 
 
-Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level 1 or 2 should work as most efficient way. 
+Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level 10 to 100 should work as most efficient way. 
 
 As tested, an analysis of 30 genomes, and 10 bins generated by Step 5:
-* A bin level of 1, takes 0.7 seconds to finish, 
-* a bin level of 2, takes 1.3 seconds to finish,
-* a bin level of 3, takes 6.4 seconds to finish,
+* A bin level of 10, takes 0.66 seconds to finish, 
+* a bin level of 100, takes 1.35 seconds to finish,
+* a bin level of 1000, takes 6.3 seconds to finish,
 
 <font color="red">**When to set a high bin level:**</font><br>
 Simply speaking, when you have really larger amount of genomes and not enough memory (e.g., more than 1000 genomes and less than 64 GB memory) <br>
