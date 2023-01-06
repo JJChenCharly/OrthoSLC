@@ -32,6 +32,7 @@ The programs uses [A simple C++ Thread Pool implementation](https://github.com/p
 
 **Version change**:<br>
 Comparing with `0.1Alpha`, current version `0.1Beta` allow users to set `bin level`, in Step 5 and Step 6, with a linear style instead of exponatial style.
+**Fiexed**: fixed output path concatenation failure in Step2.
 
 **Note:**<br>
 For all steps, users do not need to make the output directory manually, program will do that for you.
