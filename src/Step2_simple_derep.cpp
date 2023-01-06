@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
             // for file to save
             std::string file_naam = fs::path(in_p).filename();
-            std::string op_full_path = *op + file_naam;
+            std::string op_full_path = fs::path(*op) / fs::path(file_naam);
             std::ofstream fasta_out_put(op_full_path, std::ios::trunc);
 
             std::string a_line, original_id;
