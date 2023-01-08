@@ -31,7 +31,8 @@ Besides callable binary files, we also provide an "all-in-one" Jupyter notebook 
 The programs uses [A simple C++ Thread Pool implementation](https://github.com/progschj/ThreadPool), and sincere thanks to [its contributors](https://github.com/progschj/ThreadPool/graphs/contributors).
 
 **Version change**:<br>
-Comparing with `0.1Alpha`, current version `0.1Beta` allow users to set `bin level`, in Step 5 and Step 6, with a linear style instead of exponatial style.<br>
+`0.1Alpha` -> current version `0.1Beta`:<br>
+allow users to set `bin level`, in Step 5 and Step 6, with a linear style instead of exponatial style.<br>
 **Fiexed**: fixed output path concatenation failure in Step2.
 
 **Note:**<br>
