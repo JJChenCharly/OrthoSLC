@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
         }
         else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
         {
-            std::cout << "Thanks for using OrthoSLC! (version: 0.1Beta)\n\n";
+            std::cout << "Thanks for using OrthoSLC! (version: 0.1)\n\n";
             std::cout << "Usage: Step2_simple_derep -i input_file -o output/ [options...]\n\n";
             std::cout << "  -i or --input_path -------> path/to/file/output/by/Step1\n";
             std::cout << "  -o or --output_path ------> path/to/output/directory\n";
@@ -39,6 +39,11 @@ int main(int argc, char** argv) {
             std::cout << "  -h or --help -------------> display this information\n";
             exit(0);
         }
+    }
+    // if file path exist
+    if (!(fs::exists(strain_info_tsv_pth))) {
+        std::cerr << "Error: path provided to '-i or --input_path' do not exist. 路径不存在\n";
+        exit(0);
     }
 
     // if op path exit
@@ -82,7 +87,7 @@ int main(int argc, char** argv) {
 
             // for file to save
             std::string file_naam = fs::path(in_p).filename();
-            std::string op_full_path = *op + "/"  + file_naam;
+            std::string op_full_path = fs::path(*op) / fs::path(file_naam);
             std::ofstream fasta_out_put(op_full_path, std::ios::trunc);
 
             std::string a_line, original_id;

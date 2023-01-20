@@ -22,13 +22,19 @@ int main(int argc, char** argv) {
         }
         else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
         {
-            std::cout << "Thanks for using OrthoSLC! (version: 0.1Beta)\n\n";
+            std::cout << "Thanks for using OrthoSLC! (version: 0.1)\n\n";
             std::cout << "Usage: Step1_preparation -i input/ -o output.txt\n\n";
             std::cout << "  -i or --input_path -------> path/to/input/directory\n";
             std::cout << "  -o or --output_path ------> path/to/output_file\n";;
             std::cout << "  -h or --help -------------> display this information\n";
             exit(0);
         }
+    }
+
+    // if file path exist
+    if (!(fs::exists(raw_annotated_dir_path))) {
+        std::cerr << "Error: path provided to '-i or --input_path' do not exist. 路径不存在\n";
+        exit(0);
     }
 
     std::ofstream pre_res_output(pre_res_path, std::ios::trunc);
@@ -54,4 +60,6 @@ int main(int argc, char** argv) {
     }
     
     pre_res_output.close();
+
+    return 0;
 }
