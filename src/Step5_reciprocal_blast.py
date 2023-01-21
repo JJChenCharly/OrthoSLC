@@ -60,7 +60,7 @@ for opt, arg in opts:
         elif mem_eff_mode_arg == "off":
             mem_eff_mode = False
         else:
-            print("option ' -m or --mem_eff_mode' accept only <yes> or <no>.")
+            print("option ' -m or --mem_eff_mode' accept only <on> or <off>.")
             sys.exit()
 
     elif opt in ['-h', '--help']:
