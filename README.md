@@ -139,7 +139,7 @@ As tested, the BLAST time usage after dereplication could be significantly reduc
 
 ## Step 5 Reciprocal Blast
 
-Step 4 will carry out the Reciprocal Blast using NCBI Blast. You can get it from [NCBI official](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+Step 5 will carry out the Reciprocal Blast using NCBI Blast. You can get it from [NCBI official](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
  
 The pipeline will assist you to:<br>
 1. Create databases for each of all dereplicated genomes using `makeblastdb`.
