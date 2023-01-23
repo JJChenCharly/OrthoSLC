@@ -190,7 +190,7 @@ reduce computational overhead. This can be very useful if the task involves many
 
 In addition, sequentially running BLAST will produce one tabular output per database. This will be a better adaptation for the job parallelization of finding reciprocal best hits in later steps, which will apply the hash binning method.
 
-In current version `0.1`, program allow users to choose recoprocal BLAST executed under memory efficient mode or not. Under memory efficient mode, the real-time memory usage will be much lower but **much more** time consuming.
+Since version `0.1`, program allow users to choose recoprocal BLAST executed under memory efficient mode or not. Under memory efficient mode, the real-time memory usage will be much lower but **much more** time consuming.
 
 ## Step 6 query binning
 This is the new feature in version `0.1`. This step is to apply hash binning to bin all presence of a query into same file to facilitate next step filtering.
