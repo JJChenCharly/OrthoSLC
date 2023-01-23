@@ -1,6 +1,6 @@
 # Readme OrthoSLC (0.1.1)
 
-**OrthoSLC** is a pipline that perfoms Reciprocal Best Blast Hit (RBBH) Single Linkage Clustering to obtain Orthologous Genes. <br>
+**OrthoSLC** is a pipline that performs Reciprocal Best Blast Hit (RBBH) Single Linkage Clustering to obtain Orthologous Genes. <br>
 
 It is: <br>
 * lightweight, fast, and convenient to install
