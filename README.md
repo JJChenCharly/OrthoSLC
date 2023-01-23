@@ -11,23 +11,6 @@ The pipeline **start with annotated genomes**, and can **produce clusters of gen
 
 Note that, pipeline is recommended for sub-species level single copy core genome construction since RBBH may not work well for missions like Human-Microbe core genome construction.
 
-**Version change**:<br>
-`0.1Alpha` -> `0.1Beta`:<br>
-* allow users to set `bin level`, in steps using hash binning, with a linear style instead of exponatial style.<br>
-
-* **Fixed**: fixed output path concatenation failure in Step 2.
-
-`0.1Beta` -> current version `0.1`:<br>
-* applied pre-clustering before BLAST which significantly reduce time usage especially when phylogenetically close genomes paticipated analysis.
-    * 500 <i>Listeria monocytogenes</i> in `0.1Beta` -> ~7 hours, `0.1` -> ~22 mins
-    * 1150 <i>E. coli</i> `0.1Beta` -> ~2.7 days, `0.1` -> less than 5 hours
-    
-* In `Step5_reprocal_blast`, we provide optinal memory efficient mode. It is a simple set up of multithreading when running BLAST. Since after pre clustering, some non-redundant genomes may become very small in size, which make them less efficient to BLAST with multiple threads. With memory efficient mode `off`, program will assign only 1 thread on each BLAST task so that there will be no thread waiting for database formatting and pre-processing. It can significantly increase the BLAST efficiency but with some more consumed memory.
-
-* we provide **no lock mode** in all steps that apply hash binning to speed up the process. We allow users to turn off mutex lock which is to safely write into files when multi-threading. In ours tests, program can generate files without data corruption when multi-threading with no lock (data corruption were rarely observed, the possiblity of data corruption may vary between computation platform).
-
-* **Fixed**: fixed the bug happening when writing final clusteres of FASTA files.
-
 **Caveat:**<br>
 The pipeline is currently available for linux-like system only and have been tested on Ubuntu 20.04 and 18.04.
 
@@ -128,7 +111,7 @@ You may run `Step4_pre_cluster` like following:
 Usage: Step4_pre_cluster -i concatenated.fasta -d dereped.fasta -n nr_genome/ -l seq_len.txt -p pre_cluster.txt [options...]
 
   -i or --input_path ---------> path/to/input.FASTA
-  -d or --concatenated_fasta -> path/to/output/dereplicated FASTA
+  -d or --concatenated_fasta -> path/to/output/dereplicated concatenated FASTA
   -n or --nr_genomes ---------> path/to/directory/of/output/non-reundant/genomes
   -l or --seq_len_info -------> path/to/output/sequence_length_table
   -p or --pre_cluster --------> path/to/output/pre-clustered_file
@@ -239,6 +222,9 @@ As tested, an analysis of 30 genomes, has 30 BLAST output after step 5.
 Simply speaking, when you have really larger amount of genomes and not enough memory (e.g., more than 1000 genomes and less than 100 GB memory) <br>
 
 The output of BLAST for 1000 genomes can reach 150 GB in size, and if the bin level is set to 10, there will be 10 bins to evenly distribute the data. On average, each bin will contain 1.5 GB of data, which may be too memory-intensive to process in step 6 (where requires approximately 1.5 GB of memory per bin). However, if the number of bins is increased to 1000, the size of each bin will be reduced to between 100-200 MB, which then facilitate step 7 parallelization.
+
+<font color="red"><b>No lock mode:</b></font><br>
+we provide **no lock mode** in all steps that apply hash binning to speed up the process. We allow users to turn off mutex lock which is to safely write into files when multi-threading. In ours tests, program can generate files without data corruption when multi-threading with no lock (data corruption were rarely observed, the possiblity of data corruption may vary between computation platform).
 
 ## Step 7 Filtering and binning
 
