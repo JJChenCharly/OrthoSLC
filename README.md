@@ -1,4 +1,4 @@
-# Readme OrthoSLC (0.1)
+# Readme OrthoSLC (0.1.1)
 
 **OrthoSLC** is a pipline that perfomrs Reciprocal Best Blast Hit (RBBH) Single Linkage Clustering to obtain Orthologous Genes. <br>
 
