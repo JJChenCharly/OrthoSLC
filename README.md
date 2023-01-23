@@ -388,7 +388,7 @@ time $bin_dir/Step9_SLC \
 ```
 it will perform clustering on every 10 files, and generate 20 files in `$cp"/SLC_3`.
 
-Finally, Set `-S or --compression_size` as all, and provide `pre_cluster.txt` made in Step 4 using `-p or --pre_cluster_path`
+Finally, Set `-S or --compression_size` as `all`, and provide `pre_cluster.txt` made in Step 4 using `-p or --pre_cluster_path`
 ```Shell
 bin_dir="bin_dirctory"
 cp="working_dir"
