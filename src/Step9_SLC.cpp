@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     int process_num = 1;
     int compression_size = 10;
     bool one_step = false;
-    std::string pre_cluster_path;
+    std::string pre_cluster_path = "";
 
     for (int i = 1; i < argc; ++i)
     {
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     }
 
     // one step need -p
-    if (one_step) {
+    if (one_step || pre_cluster_path != "") {
         if (!(fs::exists(pre_cluster_path))) {
             std::cerr << "Error: '-p or --pre_cluster_path' requires valid input when attempting on-step-to-final approach,\npath provided to '-p or --pre_cluster_path' do not exist. 路径不存在\n";
             exit(0);
@@ -95,9 +95,6 @@ int main(int argc, char** argv) {
 
     if (one_step) {
         mission_lst.push_back(pre_cluster_path);
-    }
-
-    if (one_step) {
         compression_size = mission_lst.size();
     }
 

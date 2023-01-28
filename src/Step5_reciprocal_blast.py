@@ -151,6 +151,7 @@ def sequential_blast_high_s(catted_fasta_pth_,
             s_t_d[pro_id_] = s_t_d[pro_id_] + (available_threads - sum(s_t_d.values()
                                                                       )
                                               )
+            useable_th = s_t_d[pro_id_]
         st_lock_.release()
                                                
         
