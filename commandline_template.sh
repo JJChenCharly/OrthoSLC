@@ -87,7 +87,7 @@ time $bin_dir/Step9_SLC \
 -u 16 \
 -S all
 
-# Step 10, 200 genomes participates analysis, the amount left in $cp"/S2_op_dereped" ----
+# Step 10, here is an example for case where 200 genomes participates analysis, the amount left in $cp"/S2_op_dereped" ----
 time $bin_dir/Step10_write_clusters \
 -i $cp"/SLC_final/0.txt" \
 -o $cp"/S10_write_fasta" \
