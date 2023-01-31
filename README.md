@@ -16,7 +16,11 @@ The pipeline is currently available for linux-like system only and have been tes
 
 **Requirement:**<br>
 * Python3 (suggest newest stable release or higher),<br>
-* C++17 ("must" or higher for compiling) users may also directly use pre-compiled binary files.<br>
+* C++17 ("must" or higher for compiling) users may also directly use pre-compiled binary files by allowing excute access:<br>
+```Shell
+chmod a+x /path/to/bins/*
+```
+
 Or use `install.sh` to manually compile like following:
 
 ```Shell
