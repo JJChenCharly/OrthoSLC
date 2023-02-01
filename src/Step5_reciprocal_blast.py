@@ -147,11 +147,13 @@ def sequential_blast_high_s(catted_fasta_pth_,
         st_lock_.acquire()
         if sum(s_t_d.values()) >= available_threads:
             useable_th = s_t_d[pro_id_]
+#             print(str(pro_id_) + ' uses ' + str(useable_th))
         else:
             s_t_d[pro_id_] = s_t_d[pro_id_] + (available_threads - sum(s_t_d.values()
                                                                       )
                                               )
             useable_th = s_t_d[pro_id_]
+#             print(str(pro_id_) + ' uses ' + str(useable_th))
         st_lock_.release()
                                                
         
@@ -164,6 +166,7 @@ def sequential_blast_high_s(catted_fasta_pth_,
         
     st_lock_.acquire()
     s_t_d[pro_id_] = 0
+#     print(str(pro_id_) + ' finished')
     st_lock_.release()
 
 # mkdir or not
