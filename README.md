@@ -11,6 +11,11 @@ The pipeline **start with annotated genomes**, and can **produce clusters of gen
 
 Note that, pipeline is recommended for sub-species level single copy core genome construction since RBBH may not work well for missions like Human-Microbe core genome construction.
 
+**Download:**<br>
+```Shell
+$ git clone https://github.com/JJChenCharly/OrthoSLC
+```
+
 **Caveat:**<br>
 The pipeline is currently available for linux-like system only and have been tested on Ubuntu 20.04 and 18.04.
 
@@ -18,7 +23,7 @@ The pipeline is currently available for linux-like system only and have been tes
 * Python3 (suggest newest stable release or higher),<br>
 * C++17 ("must" or higher for compiling) users may also directly use pre-compiled binary files by allowing excute access:<br>
 ```Shell
-chmod a+x /path/to/bins/*
+$ chmod a+x /path/to/bins/*
 ```
 
 Or use `install.sh` to manually compile like following:
