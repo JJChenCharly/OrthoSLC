@@ -34,7 +34,7 @@ $ install.sh /path/to/src /path/to/bins
 ```
 * NCBI Blast+ (suggest 2.12 or higher) <br>
 
-Besides callable binary files, we also provide an "all-in-one" Jupyter notebook interface `OrthoSLC_Python_jupyter_interface.ipynb`. It is s relatively slow but fits small scale analysis and allow users to do customized analysis and modification in between pipeline steps. However, for datasets with 500 or more genomes, we still recommend using the binary files, which is mainly written in C++, for optimal performance.
+Besides callable binary files, we also provide an "all-in-one" Jupyter notebook interface `OrthoSLC_Python_jupyter_interface.ipynb`. It is relatively slow but fits small scale analysis and allow users to do customized analysis and modification in between pipeline steps. However, for datasets with 500 or more genomes, we still recommend using the binary files, which is mainly written in C++, for optimal performance.
 
 The programs uses [A simple C++ Thread Pool implementation](https://github.com/progschj/ThreadPool), and sincere thanks to [its contributors](https://github.com/progschj/ThreadPool/graphs/contributors).
 
