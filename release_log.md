@@ -19,3 +19,8 @@
 `0.1` -> current version `0.1.1`:<br>
 * smarter thread assignment in `Step5_reprocal_blast`.
 * more complete file and directory path check in callable binary.
+
+**Update Plan**:
+* option to supress makeblastdb stdout.
+* one blast in reciprocal.py.
+* multiple import and library.
