@@ -8,6 +8,7 @@ time ./install.sh src/ bins/
 bin_dir="./bins"
 # dir for output
 wd="./test_op"
+mkdir $wd
 # thread number
 cpu="36"
 
