@@ -287,62 +287,6 @@ for example, if the output of BLAST for 1000 genomes reach 200 GB in size, and i
 <font color="red"><b>Note:</b></font><br>
 This is the one of the most computation and I/O intensive step, use the C++ based binary file to process for better efficiency.
     
-## Step 6 Filtering and binning
-This step is to filter the blast output and to apply hash binning, in order to provide best preparation for reciprocal best find.<br>
-
-Step 6 requires **path to directory of query binning output (Step 5)**, **sequence length information, pre-cluster information output by Step 3** as input.
-
-You can run `Step6_filter_n_bin` like following:
-
-```Shell
-Usage: Step6_filter_n_bin -i input/ -o output/ -s seq_len_info.txt [options...]
-
-  -i or --input_path --------> <dir> path/to/input/directory from Step 5
-  -o or --output_path -------> <dir> path/to/output/directory
-  -s or --seq_len_path ------> <txt> path/to/seq_len_info.txt from Step 3
-  -p or --pre_cluster_path --> <txt> path/to/pre_cluster.txt from Step 3
-  -L or --bin_level ---------> <int> binning level, an intger 0 < L <= 9999 , default: 10
-  -r or --length_limit ------> <float> length difference limit, 0 < r <= 1, default: 0.3
-  -k or --no_lock_mode ------> <on/off> select to turn no lock mode <on> or <off>, default: off
-  -u or --thread_number -----> <int> thread number, default: 1
-  -h or --help --------------> display this information
-```
-
-The pipeline will carry out following treatment to BLAST output:
-1. Paralog removal: <br>
-If query and subject is from same strain, the hit will be skipped, as to remove paralog.
-2. Length ratio filtering:<br>
-Within a hit, query length $Q$ and subject length $S$, the ratio $v$ of this 2 length
-
-$$v = \frac{Q}{S}$$
-
-should be within a range, according to [L. Salichos et al](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0018755), $r (0 < r \le 1)$ is recommended to be higher than 0.3 which means the shorter sequence should not be shorter than 30% of the longer sequence:
-
-$$r \le v \le \frac{1}{r}$$<br>
-
-If above condition not met, the hit will be removed from analysis.
-
-3. Non-best-hit removal: <br>
-* Identical sequences are always regarded as best hit.
-* If a query has more than 1 subject hits, only the query-subject pair with highest score will then be kept.
-* if pairs are of same score, the pair whose query and subject are of more similar length will be kept.
-4. Sorting and binning:<br>
-For every kept hit, its query and subject will be sorted using Python or C++ built in sort algorithm. This is because in a sequential blast output file, only "<b>single direction best hit</b>" can be obtained, its "<b>reciprocal best hit</b>" only exist in other files, which poses difficulty doing "<b>repriprocal finding</b>". <br>
-However, if a query $a$ and its best suject hit $b$, passed filter above, and form $(a, b)$, and in the mean time we sort its rericprocal hit $(b, a)$ from another file into $(a, b)$, then both $(a, b)$ will generate same hash value. This hashed value with last several digits will allow us to bin them into same new file. Therefore, after this binning, "<b>reciprocal finding</b>" will be turned into "<b>duplication finding</b>" within one same file.<br>
-
-<font color="red"><b>Set bin level:</b></font><br>
-According to the amount of genomes to analysze, user should provide binning level, which is to set how many bins should be used. Level $L$ should be interger within range $0 < L \le 9999$, and will generate $L$ bins. 
-
-Suggestion is that do not set the bin level too high, especially when less than 200 genomes participated. If such amount of genomes participated analysis, bin level from 10 to 100 should work as most efficient way. 
-
-<font color="red"><b>When to set a high bin level:</b></font><br>
-Simply speaking, when you have really larger amount of genomes and not enough memory (e.g., more than 1000 genomes and less than 100 GB memory) <br>
-
-for example, if the output of BLAST for 1000 genomes reach 200 GB in size, and if the bin level is set to 100, there will be 100 bins to evenly distribute the data. On average, each bin will contain 1.7 GB of data, which may be too memory-intensive to process in step 7, where reciprocal find is performed (which requires approximately 1.7 GB of memory per bin). However, if the number of bins is increased to 1000, the size of each bin will be reduced to between 100-200 MB, which then facilitate step 7 parallelization.
-
-<font color="red"><b>Note:</b></font><br>
-This is the one of the most computation and I/O intensive step, use the C++ based binary file to process for better efficiency.
-    
 ## Step 7 Reciprocal Best find
 This Step is to find reciprocal best hits. In `Step 6`, query-subject pairs had been binned into different files according to their hash value, therefore, pair $(a, b)$ and its reciprocal pair $(b, a)$ (which was sorted into $(a, b)$), will be in the same bin. Thus, a pair found twice in a bin will be reported as a reciprocal best blast pair.
 
