@@ -25,7 +25,7 @@
 * new help display, include input type.
 * supress makeblastdb stdout.
 
-**Fixed**:
+* **Fixed**:
 * Sequence description line missassignment.
 * Blast hit filtering bug fix, so now both jupyter and c++ binary usage should produce same output.
 
