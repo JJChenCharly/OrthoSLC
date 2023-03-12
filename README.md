@@ -299,8 +299,8 @@ Usage: Step6_filter_n_bin -i input/ -o output/ -s seq_len_info.txt [options...]
 
   -i or --input_path --------> <dir> path/to/input/directory from Step 5
   -o or --output_path -------> <dir> path/to/output/directory
-  -s or --seq_len_path ------> <txt> path/to/output/seq_len_info.txt
-  -p or --pre_cluster_path --> <txt> path/to/output/pre_cluster.txt
+  -s or --seq_len_path ------> <txt> path/to/seq_len_info.txt from Step 3
+  -p or --pre_cluster_path --> <txt> path/to/pre_cluster.txt from Step 3
   -L or --bin_level ---------> <int> binning level, an intger 0 < L <= 9999 , default: 10
   -r or --length_limit ------> <float> length difference limit, 0 < r <= 1, default: 0.3
   -k or --no_lock_mode ------> <on/off> select to turn no lock mode <on> or <off>, default: off
