@@ -20,7 +20,14 @@
 * smarter thread assignment in `Step5_reprocal_blast`.
 * more complete file and directory path check in callable binary.
 
+`0.1.1` -> current version `0.2.0`:<br>
+* instead of using concatenated fasta of all output from Step 2 for final fasta writting,the combined dereplicated fasta (made by Step 3) and some key: value pair match up was used for gene info and sequence accessing. Therefore faster writing and smaller storage space needed.
+* new help display, include input type.
+* supress makeblastdb stdout.
+
+**Fixed**:
+* Sequence description line missassignment.
+* Blast hit filtering bug fix, so now both jupyter and c++ binary usage should produce same output.
+
 **Update Plan**:
-* option to supress makeblastdb stdout.
-* one blast in reciprocal.py.
-* multiple import and library.
+- better c++ and .py code organization.
