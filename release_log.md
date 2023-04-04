@@ -30,5 +30,7 @@
 * Blast hit filtering bug fix, so now both jupyter and c++ binary usage should produce same output.
 
 **Update Plan**:
-- better c++ and .py code organization.
+- better c++ and .py code organization
 - Blast.py mission spliter correct shuffle
+- multithread readin
+- hash based dereplication
