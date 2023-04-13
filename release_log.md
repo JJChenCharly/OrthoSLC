@@ -34,3 +34,4 @@
 - Blast.py mission spliter correct shuffle
 - multithread readin
 - hash based dereplication
+- chang-able blast output
