@@ -1,4 +1,4 @@
-# Release Log OrthoSLC (0.1.1)
+# Release Log OrthoSLC
 
 `0.1Alpha` -> `0.1Beta`:<br>
 * allow users to set `bin level`, in steps using hash binning, with a linear style instead of exponatial style.<br>
@@ -16,11 +16,11 @@
 
 * **Fixed**: fixed the bug happening when writing final clusteres of FASTA files.
 
-`0.1` -> current version `0.1.1`:<br>
+`0.1` -> version `0.1.1`:<br>
 * smarter thread assignment in `Step5_reprocal_blast`.
 * more complete file and directory path check in callable binary.
 
-`0.1.1` -> current version `0.2.0`:<br>
+`0.1.1` -> version `0.2.0`:<br>
 * instead of using concatenated fasta of all output from Step 2 for final fasta writting,the combined dereplicated fasta (made by Step 3) and some key: value pair match up was used for gene info and sequence accessing. Therefore faster writing and smaller storage space needed.
 * new help display, include input type.
 * supress makeblastdb stdout.
@@ -29,9 +29,15 @@
 * Sequence description line missassignment.
 * Blast hit filtering bug fix, so now both jupyter and c++ binary usage should produce same output.
 
+`0.2.0` -> current version `0.2.1`:<br>
+* Blast.py mission spliter corrected shuffle.
+* chang-able blast output format.
+
+* **Fixed**:
+* Bug that result in failure of truning memory efficient mode on in `Step4_reciprocal_blast.py`. 
+
 **Update Plan**:
 - better c++ and .py code organization
-- Blast.py mission spliter correct shuffle
 - multithread readin
 - hash based dereplication
-- chang-able blast output
+- other faster alignment softwares.
