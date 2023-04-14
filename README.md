@@ -418,7 +418,7 @@ are used to separate 3 types of clusters.<br>
 
 This step also requires the concatenated FASTA made in Step 3 as input.
 
-You may run `Step10_write_clusters` like this:
+You may run `Step9_write_clusters` like this:
 
 ```Shell
 Usage: Step9_write_clusters -i input_path -o output/ -f concatenated.fasta [options...]
