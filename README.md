@@ -186,6 +186,8 @@ options:
   -e or --e_value -----------> <float> blast E value, default: 1e-5
   -u or --blast_thread_num --> <int> blast thread number, default: 1
   -m or --mem_eff_mode ------> <on/off> using memory efficient mode or not, select from <'on' or 'off'>, default: off
+  -f or --outfmt ------------> <str> specify blast output format if neede, unspecified means `'6 qseqid sseqid score'` as defau
+lt
   -h or --help --------------> display this information
 ```
 
