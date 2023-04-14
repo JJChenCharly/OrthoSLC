@@ -1,4 +1,4 @@
-# Readme OrthoSLC (0.2.0)
+# Readme OrthoSLC (0.2.1)
 
 **Apologies and Warnings:** users who used versions prior to 0.2.0, may need to rerun the analysis using later versions due to incorrect sequence description line assignment (in the final results, the sequence should be correctly clustered, however, sequence ID, sequence descripition in the ">" line of fasta may be incorrect.) Sincere apologies.
 
@@ -195,6 +195,8 @@ reduce computational overhead. This can be very useful if the task involves many
 In addition, sequentially running BLAST will produce one tabular output per database. This will be a better adaptation for the job parallelization of finding reciprocal best hits in later steps, which will apply the hash binning method.
 
 Since version `0.1`, program allow users to choose recoprocal BLAST executed under memory efficient mode or not. Under memory efficient mode, the real-time memory usage will be much lower but **much more** time consuming.
+
+Since version `0.2.1` onward, users are allowed to set customized blast output format for other analysis requirement. If a follow up OthoSLC analysis is needed, leave the parameter as unspecified as default - `"6 qseqid sseqid score"` so that follow up command could parse the blast output.
     
 ## Step 5 query binning
 

@@ -10,7 +10,7 @@ bin_dir="./bins"
 wd="./test_op"
 mkdir $wd
 # thread number
-cpu="36"
+cpu="16"
 
 # Step 1 ----
 time $bin_dir/Step1_preparation \
@@ -51,7 +51,8 @@ time python3 $bin_dir/Step4_reciprocal_blast.py \
 -o $wd"/S4_op_blast_op" \
 -e 1e-5 \
 -u $cpu \
--m off
+-m off \
+-f "6 qseqid sseqid score"
 
 # Step 5 ----
 time $bin_dir/Step5_query_binning \
@@ -89,7 +90,7 @@ time $bin_dir/Step8_SLC \
 -u $cpu \
 -S all
 
-# Step 10, here is an example for case where 10 genomes participates analysis, the amount left in $wd"/S2_op_dereped" ----
+# Step 9, here is an example for case where 16 genomes participates analysis, the amount left in $wd"/S2_op_dereped" ----
 # check how many participated
 ls $wd"/S2_op_dereped/" | cat -n | tail
 
