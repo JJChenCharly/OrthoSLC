@@ -40,4 +40,5 @@
 - better c++ and .py code organization
 - multithread readin
 - hash based dereplication
-- other faster alignment softwares.
+- other faster alignment softwares
+- pre-clustering based on length limit as to reduce alignment task labor
