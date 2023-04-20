@@ -42,3 +42,5 @@
 - hash based dereplication
 - other faster alignment softwares
 - pre-clustering based on length limit as to reduce alignment task labor
+- non blastn suitability
+- protein input bug
