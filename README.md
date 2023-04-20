@@ -19,11 +19,11 @@ $ git clone https://github.com/JJChenCharly/OrthoSLC
 ```
 
 **Caveat:**<br>
-The pipeline is currently available for linux-like system only and have been tested on Ubuntu 20.04 and 18.04 and Debian Strech.
+The pipeline is currently available for linux-like system only and have been tested on Ubuntu 20.04 and Debian Strech.
 
 **Requirement:**<br>
 * Python3 (suggest newest stable release or higher),<br>
-* C++17 ("must" or higher for compiling) users may also directly use pre-compiled binary files by allowing excute access:<br>
+* C++17 and GCC/G++ 9.0 ("must" or higher for compiling) users may also directly use pre-compiled binary files by allowing excute access:<br>
 ```Shell
 $ chmod a+x /path/to/bins/*
 ```
