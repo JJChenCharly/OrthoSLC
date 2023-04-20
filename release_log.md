@@ -44,3 +44,4 @@
 - pre-clustering based on length limit as to reduce alignment task labor
 - non blastn suitability
 - protein input bug
+- thread assignment when more threads than task amount
