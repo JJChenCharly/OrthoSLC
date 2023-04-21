@@ -24,12 +24,14 @@ blast_op_dir = ''
 mem_eff_mode = False
 # blast output format
 outfmt = str("6 qseqid sseqid score")
+# blastp task, select from <'blastp' 'blastp-fast' 'blastp-short'>
+blastp_task = ''
 
 argv = sys.argv[1:]
 
 try:
     opts, args = getopt.getopt(argv, 
-                               "c:i:d:o:e:u:m:f:h", 
+                               "c:i:d:o:e:u:m:f:t:h", 
                                ["path_to_blast =",
                                 "query =",
                                 "dir_to_dbs =",
@@ -38,6 +40,7 @@ try:
                                 "blast_thread_num =",
                                 "mem_eff_mode = ",
                                 "outfmt = ",
+                                "blastp_task = ",
                                 "help"]
                               )
     
@@ -70,6 +73,8 @@ for opt, arg in opts:
             sys.exit()
     elif opt in ['-f', '--outfmt']:
         outfmt = arg
+    elif opt in ['-t', '--blastp_task']:
+        blastp_task = arg
 
     elif opt in ['-h', '--help']:
         print("Thanks for using OrthoSLC! (version: " + blast_entity.version + ")\n")
@@ -82,7 +87,8 @@ for opt, arg in opts:
         print("  -e or --e_value -----------> <float> blast E value, default: 1e-5")
         print("  -u or --blast_thread_num --> <int> blast thread number, default: 1")
         print("  -m or --mem_eff_mode ------> <on/off> using memory efficient mode or not, select from <'on' or 'off'>, default: off")
-        print("  -f or --outfmt ------------> <str> specify blast output format if neede, unspecified means `'6 qseqid sseqid score'` as default")
+        print("  -f or --outfmt ------------> <str> specify blast output format if needed, unspecified means `'6 qseqid sseqid score'` as default")
+        print("  -t or --blastp_task  ------> <str> specify blastp_task, select from <'blastp' 'blastp-fast' 'blastp-short'>, unspecified means `'blastp'` as default")
         print("  -h or --help --------------> display this information")
         sys.exit()
 
@@ -96,6 +102,10 @@ elif not os.path.exists(os.path.dirname(blast_op_dir)):
     print("Error: parent path provided to '-o or --output_path' do not exist. 路径不存在")
     sys.exit()
 
+if 'blastn' in blast_bin_ and blastp_task != "":
+    print("Error: set '-t or --blastp_task' for blastp mission only.")
+    sys.exit()
+
 # mkdir or not
 if os.path.exists(blast_op_dir):
     pass
@@ -106,18 +116,36 @@ else:
 mission_lst = os.listdir(blastdb_dir_path)
 mission_lst = [os.path.join(blastdb_dir_path, x) for x in mission_lst]
 
+cmd_lst = [blast_bin_, 
+            "-query", cated_dereped_fasta_path,
+            # "-db", db_name,
+            # "-out", save_dest,
+            "-evalue", str(E_value),
+            "-max_hsps", "1",
+            # "-dust", "no",
+            "-outfmt", outfmt,
+            "-mt_mode", "1"
+            # "-num_threads", str(t_num)
+            ]
+
+if 'blastn' in blast_bin_:
+    cmd_lst.extend(["-dust", "no"])
+elif 'blastp' in blast_bin_ and blastp_task == "":
+    cmd_lst.extend(["-task", "blastp"])
+else:
+    cmd_lst.extend(["-task", blastp_task])
+
 if mem_eff_mode:
     blast_low = blast_entity.RBB
-    # print('low')
+
+    cmd_lst.extend(["-num_threads", str(process_number)])
 
     for db in mission_lst:
-        blast_low(cated_dereped_fasta_path, 
+        
+        blast_low(cmd_lst,
                   db, 
-                  blast_op_dir, 
-                  blast_bin_, 
-                  E_value, 
-                  process_number,
-                  outfmt)
+                  blast_op_dir
+                  )
         
 else:
     mission_lst = BLAST.mission_spliter(mission_lst, 
@@ -132,7 +160,7 @@ else:
             
             st_lock = Lock()
             
-            for x in range(process_number):
+            for x in range(len(mission_lst)):
                 smart_threads_d[x] = 1
         
             # mp
@@ -142,16 +170,13 @@ else:
             for db_lst in mission_lst:
 
                 p = Process(target = blast_high,
-                            args = (cated_dereped_fasta_path, 
-                                    db_lst, 
+                            args = (cmd_lst,
+                                    db_lst,
                                     blast_op_dir,
-                                    blast_bin_,
-                                    E_value,
                                     pro_id,
                                     smart_threads_d, 
                                     st_lock,
                                     process_number,
-                                    outfmt
                                    )
                            )
                 p.start()
