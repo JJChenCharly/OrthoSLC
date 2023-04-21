@@ -1,4 +1,4 @@
-# Readme OrthoSLC (0.2.1)
+# Readme OrthoSLC (0.2.2)
 
 **Apologies and Warnings:** users who used versions prior to 0.2.0, may need to rerun the analysis using later versions due to incorrect sequence description line assignment (in the final results, the sequence should be correctly clustered, however, sequence ID, sequence descripition in the ">" line of fasta may be incorrect.) Sincere apologies.
 
@@ -16,6 +16,7 @@ Note that, pipeline is recommended for sub-species level single copy core genome
 **Download:**<br>
 ```Shell
 $ git clone https://github.com/JJChenCharly/OrthoSLC
+$ cd OrthoSLC
 ```
 
 **Caveat:**<br>
@@ -25,14 +26,16 @@ The pipeline is currently available for linux-like system only and have been tes
 * Python3 (suggest newest stable release or higher),<br>
 * C++17 and GCC/G++ 9.0 ("must" or higher for compiling) users may also directly use pre-compiled binary files by allowing excute access:<br>
 ```Shell
-$ chmod a+x /path/to/bins/*
+$ cd OrthoSLC
+$ chmod a+x bins/*
 ```
 
 Or use `install.sh` to manually compile like following:
 
 ```Shell
+$ cd OrthoSLC
 $ chmod a+x install.sh
-$ install.sh /path/to/src /path/to/bins
+$ ./install.sh src/ bins/
 ```
 * NCBI Blast+ (suggest 2.12 or higher) <br>
 
@@ -186,8 +189,11 @@ options:
   -e or --e_value -----------> <float> blast E value, default: 1e-5
   -u or --blast_thread_num --> <int> blast thread number, default: 1
   -m or --mem_eff_mode ------> <on/off> using memory efficient mode or not, select from <'on' or 'off'>, default: off
-  -f or --outfmt ------------> <str> specify blast output format if neede, unspecified means `'6 qseqid sseqid score'` as default
+  -f or --outfmt ------------> <str> specify blast output format if needed, unspecified means `'6 qseqid sseqid score'` as default
+  -t or --blastp_task  ------> <str> specify blastp_task, select from <'blastp' 'blastp-fast' 'blastp-short'>, unspecified mean
+s `'blastp'` as default
   -h or --help --------------> display this information
+
 ```
 
 The reason to BLAST against each database sequentially rather than directly using an all-vs-all approach is to 

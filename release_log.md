@@ -29,12 +29,19 @@
 * Sequence description line missassignment.
 * Blast hit filtering bug fix, so now both jupyter and c++ binary usage should produce same output.
 
-`0.2.0` -> current version `0.2.1`:<br>
+`0.2.0` -> version `0.2.1`:<br>
 * Blast.py mission spliter corrected shuffle.
 * chang-able blast output format.
 
 * **Fixed**:
 * Bug that result in failure of truning memory efficient mode on in `Step4_reciprocal_blast.py`. 
+
+`0.2.1` -> current version `0.2.2`:<br>
+* allow setting up the `--blastp_task` when running blastp mission.
+
+* **Fixed**:
+* Bug fix that resluting in unexpected ending when running `Step4_reciprocal_blast.py` using blastp on low memory usage mode.
+* correction pusdo process pool (mission spliter) make when less task than thread available. 
 
 **Update Plan**:
 - better c++ and .py code organization
@@ -42,6 +49,3 @@
 - hash based dereplication
 - other faster alignment softwares
 - pre-clustering based on length limit as to reduce alignment task labor
-- non blastn suitability
-- protein input bug
-- thread assignment when more threads than task amount
