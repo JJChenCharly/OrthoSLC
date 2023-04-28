@@ -50,7 +50,7 @@ Bug report:
 * <jingjie.chencharly@gmail.com>
 
 **Workflow:**
-*For convience, it is suggested to view* `commandline_template.sh`*, before running the whole pipeline.*
+**For convience, it is suggested to view** `commandline_template.sh`**, before running the whole pipeline.**
 ![My Image](./workflow.jpg)
 
 ## Step 1 Genome information preparation
