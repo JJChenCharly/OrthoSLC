@@ -49,3 +49,4 @@
 - hash based dereplication
 - other faster alignment softwares
 - pre-clustering based on length limit as to reduce alignment task labor
+- add similarity, aligned length threshold, which can be combination with the pairwise full length threshold. 
