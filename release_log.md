@@ -44,6 +44,7 @@
 * correction pusdo process pool (mission spliter) make when less task than thread available. 
 
 **Update Plan**:
+- substring with '\t' as division instead of first 11 chars.
 - better c++ and .py code organization
 - multithread readin
 - hash based dereplication
