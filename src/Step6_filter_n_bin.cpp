@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
                 key = element;
             }
             key_++;
-            bin_spe[key].insert(element.substr(0, 5));
+            bin_spe[key].insert(element.substr(0, element.find("-")));
         }
         
     }
@@ -203,7 +203,7 @@ int main(int argc, char** argv) {
                 std::getline(ss_, subject, '\t');
                 std::getline(ss_, score);
 
-                if (query.substr(0, 5) == subject.substr(0, 5)) {
+                if (query.substr(0, query.find("-")) == subject.substr(0, subject.find("-"))) {
                     continue;
                 } else {
                     int score_ = stoi(score);
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
 
                 for (const auto& [sub, its_score] : nested_um) {
 
-                    std::string s_spe = sub.substr(0, 5);
+                    std::string s_spe = sub.substr(0, sub.find("-"));
 
                     if (bin_spe_->at(qs).find(s_spe) != bin_spe_->at(qs).end()) { // if qs pre cluster has that spe
                         continue;

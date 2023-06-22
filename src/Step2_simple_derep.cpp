@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 
             std::string a_line, info;
             std::string a_seq = "";
-            int seq_id = 10000; // start
+            int seq_id = 0; // start
 
             std::unordered_set<std::string> added_seq = {"added_seq"};
 

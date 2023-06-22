@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     if (!(fs::exists(parent_dereped_cated_fasta_pth))) {
         std::cerr << "Error: parent path provided to '-d or --concatenated_fasta' does not exist. 路径不存在\n";
         exit(0);
-    }
+    } 
     else if (!(fs::exists(parent_nr_dir))) {
         std::cerr << "Error: parent path provided to '-n or --nr_genomes' does not exist. 路径不存在\n";
         exit(0);
@@ -119,14 +119,17 @@ int main(int argc, char** argv) {
 
         // first
         getline (a_dereped_fasta, a_line);
-        seq_id = a_line.substr(1, 11);
-        info = a_line.substr(13);
+
+        size_t  space_indx = a_line.find(" ");
+        seq_id = a_line.substr(1, space_indx - 1);
+        info = a_line.substr(space_indx + 1);
 
         while (getline (a_dereped_fasta, a_line)) {
                 
             if (a_line[0] == '>') { // if the row of id 
                 // save id info (a previous info)
                 id_info << seq_id + "\t" + info + "\n";
+
                 // operate on previous SeqRecord using previous seq_id
                 if (pre_cluster.count(a_seq) == 0) { // if no prescence before, need comparison with find
                     pre_cluster[a_seq].push_back(seq_id);
@@ -145,7 +148,7 @@ int main(int argc, char** argv) {
 
                     dereped_cated_dict[seq_id] = rec_id + a_seq_to_write;
 
-                    each_d[seq_id.substr(0, 5)].push_back(seq_id);
+                    each_d[seq_id.substr(0, seq_id.find("-"))].push_back(seq_id);
 
                 } else { // if presence before
                     (pre_cluster.at(a_seq)).push_back(seq_id);
@@ -153,8 +156,9 @@ int main(int argc, char** argv) {
                 }
                 
                 // cover previous seq_id
-                info = a_line.substr(13);
-                seq_id = a_line.substr(1, 11);
+                size_t space_indx = a_line.find(" ");
+                seq_id = a_line.substr(1, space_indx - 1);
+                info = a_line.substr(space_indx + 1);
                 
                 // reset previous a_seq
                 a_seq = ""; // reset a_seq
@@ -184,7 +188,7 @@ int main(int argc, char** argv) {
 
             dereped_cated_dict[seq_id] = rec_id + a_seq_to_write;
 
-            each_d[seq_id.substr(0, 5)].push_back(seq_id);
+            each_d[seq_id.substr(0, seq_id.find("-"))].push_back(seq_id);
 
         } else {
             (pre_cluster.at(a_seq)).push_back(seq_id);

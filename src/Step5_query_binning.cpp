@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
             while (std::getline(a_blast_op, a_line)) {
                 a_line = a_line + "\n";
 
-                std::string query = a_line.substr(0, 11);
+                std::string query = a_line.substr(0, a_line.find("\t"));
                 
                 size_t h = hash_fn(query);
                 int b = h % b_level;

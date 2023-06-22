@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
     
     // first one
     getline(dereped_cat_file, a_line);
-    std::string key = a_line.substr(1, 11);
+    std::string key = a_line.substr(1, a_line.find(" ") - 1);
     std::string seq = "";
 
     while (getline(dereped_cat_file, a_line)) {
@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
             // save previous one
             fasta_dict[key] = seq;
 
-            key = a_line.substr(1, 11);
+            key = a_line.substr(1, a_line.find(" ") - 1);
             seq = "";
         } else {
             seq = seq + a_line + "\n";
@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
             std::unordered_set<std::string> spe_count;
 
             for (const std::string& s : the_cluster) {
-                spe_count.insert(s.substr(0, 5));
+                spe_count.insert(s.substr(0, s.find("-")));
             }
 
             fs::path file_naam;

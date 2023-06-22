@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
         exit(0);
     }
 
-    std::ofstream pre_res_output(pre_res_path, std::ios::trunc);
+    std::ofstream pre_res_output(pre_res_path, std::ios::trunc); // m = overwrite
 
-    int start_c = 10000;
+    int start_c = 0;
     std::string strain_naam;
 
     for (const auto& entry : fs::directory_iterator(raw_annotated_dir_path)) { // range iteration to get abs path
