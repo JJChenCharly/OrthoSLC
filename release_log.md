@@ -36,15 +36,17 @@
 * **Fixed**:
 * Bug that result in failure of truning memory efficient mode on in `Step4_reciprocal_blast.py`. 
 
-`0.2.1` -> current version `0.2.2`:<br>
+`0.2.1` -> `0.2.2`:<br>
 * allow setting up the `--blastp_task` when running blastp mission.
 
 * **Fixed**:
 * Bug fix that resluting in unexpected ending when running `Step4_reciprocal_blast.py` using blastp on low memory usage mode.
-* correction pusdo process pool (mission spliter) make when less task than thread available. 
+* correction pusdo process pool (mission spliter) make when less task than thread available.
+
+`0.2.2` -> current version `0.2.3`<br>
+* proper substring update.
 
 **Update Plan**:
-- substring with proper delimiter (space, '\t', '-' , etc.) instead of position based substring
 - file/dir path operation optimization. 
 - add similarity, aligned length threshold, which can be combination with the pairwise full length threshold
 - better c++ and .py code organization
