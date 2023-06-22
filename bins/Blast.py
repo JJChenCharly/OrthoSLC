@@ -4,7 +4,7 @@ import random
 from typing import List
 import copy
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 class BLAST:
     def __init__(self,
