@@ -44,10 +44,12 @@
 * correction pusdo process pool (mission spliter) make when less task than thread available. 
 
 **Update Plan**:
-- substring with '\t' as division instead of first 11 chars.
+- substring with proper delimiter (space, '\t', '-' , etc.) instead of position based substring
+- file/dir path operation optimization. 
+- add similarity, aligned length threshold, which can be combination with the pairwise full length threshold
 - better c++ and .py code organization
 - multithread readin
 - hash based dereplication
 - other faster alignment softwares
 - pre-clustering based on length limit as to reduce alignment task labor
-- add similarity, aligned length threshold, which can be combination with the pairwise full length threshold. 
+
