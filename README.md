@@ -298,7 +298,7 @@ for example, if the output of BLAST for 1000 genomes reach 200 GB in size, and i
 This is the one of the most computation and I/O intensive step, use the C++ based binary file to process for better efficiency.
     
 ## Step 7 Reciprocal Best find
-This Step is to find reciprocal best hits. In `Step 6`, query-subject pairs had been binned into different files according to their hash value, therefore, pair $(a, b)$ and its reciprocal pair $(b, a)$ (which was sorted into $(a, b)$), will be in the same bin. Thus, a pair found twice in a bin will be reported as a reciprocal best blast pair.
+This Step is to find reciprocal best hits. In `Step 6`, query-subject pairs had been binned into different files according to their hash value, therefore, pair $(a, b)$ and its reciprocal pair $(b, a)$ (which was sorted into $(a, b)$ ), will be in the same bin. Thus, a pair found twice in a bin will be reported as a reciprocal best blast pair.
 
 In addition, Step 7 also does hash binning after a reciprocal best hit is comfirmed. Query-subject pairs will be binned by the hash value of query ID, which then put pairs with common elements into same bin to assist faster clustering in next step.
 
