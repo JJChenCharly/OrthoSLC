@@ -1,4 +1,4 @@
-# Readme OrthoSLC (0.2.3)
+# Readme OrthoSLC (0.2.4)
 
 **Apologies and Warnings:** users who used versions prior to 0.2.0, may need to rerun the analysis using later versions due to incorrect sequence description line assignment (in the final results, the sequence should be correctly clustered, however, sequence ID, sequence descripition in the ">" line of fasta may be incorrect.) Sincere apologies.
 
