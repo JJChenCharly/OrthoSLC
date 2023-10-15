@@ -46,6 +46,12 @@
 `0.2.2` -> current version `0.2.3`<br>
 * proper substring update.
 
+`0.2.3` -> current version `0.2.4`<br>
+* allow setting up the `--blastn_task` when running blastn mission.
+* 
+* **Fixed**:
+* Since blast will automatically 4 digits strain ID in to pdb entries, all 4 digits strain IDs now will be add '0' at the start.
+
 **Update Plan**:
 - file/dir path operation optimization. 
 - add similarity, aligned length threshold, which can be combination with the pairwise full length threshold
