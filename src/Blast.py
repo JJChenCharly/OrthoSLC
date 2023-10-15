@@ -4,14 +4,13 @@ import random
 from typing import List
 import copy
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 class BLAST:
     def __init__(self,
                  V = __version__):
         self.version = V
-
-    @staticmethod
+        
     def mission_spliter(lst: List, 
                         num_splits: int) -> List[List]:
         n = len(lst)

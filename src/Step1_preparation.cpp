@@ -58,7 +58,12 @@ int main(int argc, char** argv) {
         size_t lastindex = strain_naam.find_last_of(".");
         strain_naam = strain_naam.substr(0, lastindex);
 
-        pre_res_output << start_c << "\t";
+        std::string str_start_c = std::to_string(start_c);
+        if (str_start_c.length() == 4) {
+            pre_res_output << '0' << start_c << "\t";
+        } else {
+            pre_res_output << start_c << "\t";
+        }
 
         pre_res_output << strain_naam << "\t";
 

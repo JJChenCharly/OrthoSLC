@@ -26,12 +26,14 @@ mem_eff_mode = False
 outfmt = str("6 qseqid sseqid score")
 # blastp task, select from <'blastp' 'blastp-fast' 'blastp-short'>
 blastp_task = ''
+# blastp task <blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn'>
+blastn_task = ''
 
 argv = sys.argv[1:]
 
 try:
     opts, args = getopt.getopt(argv, 
-                               "c:i:d:o:e:u:m:f:t:h", 
+                               "c:i:d:o:e:u:m:f:t:T:h", 
                                ["path_to_blast =",
                                 "query =",
                                 "dir_to_dbs =",
@@ -41,6 +43,7 @@ try:
                                 "mem_eff_mode = ",
                                 "outfmt = ",
                                 "blastp_task = ",
+                                "blastn_task = ",
                                 "help"]
                               )
     
@@ -69,12 +72,14 @@ for opt, arg in opts:
         elif mem_eff_mode_arg == "off":
             mem_eff_mode = False
         else:
-            print("option ' -m or --mem_eff_mode' accept only <on> or <off>.")
+            print("option '-m or --mem_eff_mode' accept only <on> or <off>.")
             sys.exit()
     elif opt in ['-f', '--outfmt']:
         outfmt = arg
     elif opt in ['-t', '--blastp_task']:
         blastp_task = arg
+    elif opt in ['-T', '--blastn_task']:
+        blastn_task = arg
 
     elif opt in ['-h', '--help']:
         print("Thanks for using OrthoSLC! (version: " + blast_entity.version + ")\n")
@@ -89,6 +94,7 @@ for opt, arg in opts:
         print("  -m or --mem_eff_mode ------> <on/off> using memory efficient mode or not, select from <'on' or 'off'>, default: off")
         print("  -f or --outfmt ------------> <str> specify blast output format if needed, unspecified means `'6 qseqid sseqid score'` as default")
         print("  -t or --blastp_task  ------> <str> specify blastp_task, select from <'blastp' 'blastp-fast' 'blastp-short'>, unspecified means `'blastp'` as default")
+        print("  -T or --blastn_task  ------> <str> specify blastp_task, select from <'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn' > , unspecified means `'megablast'` as default")        
         print("  -h or --help --------------> display this information")
         sys.exit()
 
@@ -130,10 +136,15 @@ cmd_lst = [blast_bin_,
 
 if 'blastn' in blast_bin_:
     cmd_lst.extend(["-dust", "no"])
+    if blastn_task == '':
+        pass
+    else:
+        cmd_lst.extend(["-task", blastn_task])
 elif 'blastp' in blast_bin_ and blastp_task == "":
-    cmd_lst.extend(["-task", "blastp"])
-else:
-    cmd_lst.extend(["-task", blastp_task])
+    if blastp_task == '':
+        pass
+    else:
+        cmd_lst.extend(["-task", blastp_task])
 
 if mem_eff_mode:
     blast_low = blast_entity.RBB

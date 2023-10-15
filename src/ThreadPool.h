@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <string>
 
-extern const std::string __version__ = "0.2.3";
+extern const std::string __version__ = "0.2.4";
 
 class ThreadPool {
 public:
