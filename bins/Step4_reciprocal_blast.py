@@ -88,13 +88,13 @@ for opt, arg in opts:
         print("  -i or --query -------------> <fasta> path/to/dereped_cated.fasta from Step 3")
         print("  -d or --dir_to_dbs --------> <dir> path/to/directory/of/dbs by makeblastdb")
         print("  -o or --output_path -------> <dir> path/to/output/directory")
-        print("  -c or --path_to_blast -----> <cmd_path> path/to/output/blastn or blastp, default: 'blastn'")
+        print("  -c or --path_to_blast -----> <cmd_path> path/to/blastn or blastp, default: 'blastn'")
         print("  -e or --e_value -----------> <float> blast E value, default: 1e-5")
         print("  -u or --blast_thread_num --> <int> blast thread number, default: 1")
         print("  -m or --mem_eff_mode ------> <on/off> using memory efficient mode or not, select from <'on' or 'off'>, default: off")
         print("  -f or --outfmt ------------> <str> specify blast output format if needed, unspecified means `'6 qseqid sseqid score'` as default")
         print("  -t or --blastp_task  ------> <str> specify blastp_task, select from <'blastp' 'blastp-fast' 'blastp-short'>, unspecified means `'blastp'` as default")
-        print("  -T or --blastn_task  ------> <str> specify blastp_task, select from <'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn' > , unspecified means `'megablast'` as default")        
+        print("  -T or --blastn_task  ------> <str> specify blastp_task, select from <'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn' >, unspecified means `'megablast'` as default")        
         print("  -h or --help --------------> display this information")
         sys.exit()
 
@@ -110,6 +110,10 @@ elif not os.path.exists(os.path.dirname(blast_op_dir)):
 
 if 'blastn' in blast_bin_ and blastp_task != "":
     print("Error: set '-t or --blastp_task' for blastp mission only.")
+    sys.exit()
+
+if 'blastp' in blast_bin_ and blastn_task != "":
+    print("Error: set '-T or --blastn_task' for blastn mission only.")
     sys.exit()
 
 # mkdir or not
