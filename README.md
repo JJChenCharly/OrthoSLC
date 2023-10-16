@@ -167,7 +167,7 @@ options:
 
   -i or --input_path -----------> <dir> path/to/input/directory of nr_genomes from Step 2
   -o or --output_path ----------> <dir> path/to/output/directory
-  -c or --path_to_makeblastdb --> <cmd_path> path/to/output/makeblastdb, default: makeblastdb
+  -c or --path_to_makeblastdb --> <cmd_path> path/to/makeblastdb, default: makeblastdb
   -u or --thread_number --------> <int> thread number, default: 1
   -t or --dbtype ---------------> <str> -dbtype <String, 'nucl', 'prot'>, default: nucl
   -h or --help -----------------> display this information
@@ -186,16 +186,13 @@ options:
   -i or --query -------------> <fasta> path/to/dereped_cated.fasta from Step 3
   -d or --dir_to_dbs --------> <dir> path/to/directory/of/dbs by makeblastdb
   -o or --output_path -------> <dir> path/to/output/directory
-  -c or --path_to_blast -----> <cmd_path> path/to/output/blastn or blastp, default: 'blastn'
+  -c or --path_to_blast -----> <cmd_path> path/to/blastn or blastp, default: 'blastn'
   -e or --e_value -----------> <float> blast E value, default: 1e-5
   -u or --blast_thread_num --> <int> blast thread number, default: 1
   -m or --mem_eff_mode ------> <on/off> using memory efficient mode or not, select from <'on' or 'off'>, default: off
-  -f or --outfmt ------------> <str> specify blast output format if needed, unspecified means `'6 qseqid sseqid score'` as defa
-ult
-  -t or --blastp_task  ------> <str> specify blastp_task, select from <'blastp' 'blastp-fast' 'blastp-short'>, unspecified mean
-s `'blastp'` as default
-  -T or --blastn_task  ------> <str> specify blastp_task, select from <'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmbl
-astn' > , unspecified means `'megablast'` as default
+  -f or --outfmt ------------> <str> specify blast output format if needed, unspecified means `'6 qseqid sseqid score'` as default
+  -t or --blastp_task  ------> <str> specify blastp_task, select from <'blastp' 'blastp-fast' 'blastp-short'>, unspecified means `'blastp'` as default
+  -T or --blastn_task  ------> <str> specify blastp_task, select from <'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn'>, unspecified means `'megablast'` as default
   -h or --help --------------> display this information
 ```
 
