@@ -54,7 +54,7 @@ for opt, arg in opts:
         print("options:\n")
         print("  -i or --input_path -----------> <dir> path/to/input/directory of nr_genomes from Step 2")
         print("  -o or --output_path ----------> <dir> path/to/output/directory")
-        print("  -c or --path_to_makeblastdb --> <cmd_path> path/to/output/makeblastdb, default: makeblastdb")
+        print("  -c or --path_to_makeblastdb --> <cmd_path> path/to/makeblastdb, default: makeblastdb")
         print("  -u or --thread_number --------> <int> thread number, default: 1")
         print("  -t or --dbtype ---------------> <str> -dbtype <String, 'nucl', 'prot'>, default: nucl")
         print("  -h or --help -----------------> display this information")
