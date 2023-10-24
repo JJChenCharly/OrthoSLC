@@ -53,6 +53,7 @@
 * Since blast will automatically 4 digits strain ID in to pdb entries, all 4 digits strain IDs now will be add '0' at the start.
 
 **Update Plan**:
+- generate accessory gene presence matrix.
 - file/dir path operation optimization. 
 - add similarity, aligned length threshold, which can be combination with the pairwise full length threshold
 - better c++ and .py code organization
