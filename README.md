@@ -99,7 +99,7 @@ After dereplication, users should give a careful check of **size** of dereplicat
 grep -c ">" Step2_ouput_dir/* | sort -t: -k2
 ```
 
-Since the core genome construction is similar with intersection construction. <font color="red">**It is recommend to remove some very small dereplicated fasta files BEFORE NEXT STEP**, e.g., remove all dereplicated <i>E.coli </i> genomes with file size lower than 2.5MB as most should be larger than
+Since the core genome construction is similar with intersection construction. <font color="red">**It is recommend to remove some very small dereplicated fasta files BEFORE NEXT STEP**, e.g., remove all dereplicated <i>E.coli </i> genomes with file size lower than 2.5MB as most should be larger than 4 MB.
     
 ## Step 3 Pre-clustering of using all dereplicated FASTAs and non-redundant genome generation
 
