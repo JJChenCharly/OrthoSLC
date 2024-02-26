@@ -105,7 +105,7 @@ Since the core genome construction is similar with intersection construction. <f
 
 Step 3 is the new feature since version `0.1` onward comparing with `0.1Beta`.It performs 100% clustering on all dereplicated FASTAs made in Step 2.<br>
 
-The program of Step 3 will take the **dereplicated fasta files made in step 3 as input**, and produce:<br>
+The program of Step 3 will take the **dereplicated fasta files made in step 2 as input**, and produce:<br>
 * dereplicated concatenated FASTA prepared for reciprocal blast
 * length of each non-redundant sequence
 * pre-clustered gene id
