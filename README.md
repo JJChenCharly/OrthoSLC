@@ -418,9 +418,9 @@ ls S2_op_dir/ | cat -n | tail
 
 are used to separate 3 types of clusters.<br>
 
-1. In drectory `accessory_cluster`(a cluster not shared by all genomes), FASTA files of clusters, which **do not have genes from all genomes** participated analysis, will be output in this drectory. For example, there are 100 genomes in analysis, a cluster with less than 100 genes will have its FASTA output here. Also, if a cluster has >= 100 genes, but all these genes are from less than 100 genomes, its FASTA will be in this directory.
-2. In drectory `strict_core`, each cluster has **exactly 1 gene from every genome** to analyze. Such clusters will have their FASTA files here.
-3. In drectory `surplus_core`, each cluster has **at least 1 gene from every genome** to analyze, and **some genomes has more than 1 genes** in this cluster. Such clusters will have their FASTA files here.
+1. In drectory `accessory_cluster`(a cluster not shared by all genomes), FASTA files of clusters which **do not have genes from all genomes** participated analysis, will be output in this drectory. For example, there are 100 genomes in analysis, a cluster with less than 100 genes will have its FASTA output here. Also, if a cluster has >= 100 genes, but all these genes are from less than 100 genomes, its FASTA will be in this directory.
+2. In drectory `strict_core`, a give cluster with **exactly 1 gene from every genome** analyzed. Such clusters will have their FASTA files here.
+3. In drectory `surplus_core`, a give cluster with **at least 1 gene from every genome** analyzed, and **some genomes has more than 1 genes** in this cluster. Such clusters will have their FASTA files here.
 
 ![My Image2](./core.jpg)
 
