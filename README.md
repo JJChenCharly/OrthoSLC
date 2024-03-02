@@ -422,6 +422,8 @@ are used to separate 3 types of clusters.<br>
 2. In drectory `strict_core`, each cluster has **exactly 1 gene from every genome** to analyze. Such clusters will have their FASTA files here.
 3. In drectory `surplus_core`, each cluster has **at least 1 gene from every genome** to analyze, and **some genomes has more than 1 genes** in this cluster. Such clusters will have their FASTA files here.
 
+![My Image2](./core.jpg)
+
 This step also requires the concatenated FASTA made in Step 3 as input.
 
 You may run `Step9_write_clusters` like this:
