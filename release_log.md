@@ -53,12 +53,12 @@
 * Since blast will automatically 4 digits strain ID in to pdb entries, all 4 digits strain IDs now will be add '0' at the start.
 
 **Update Plan**:
-- generate accessory gene presence matrix.
-- file/dir path operation optimization. 
-- add similarity, aligned length threshold, which can be combination with the pairwise full length threshold
-- better c++ and .py code organization
-- multithread readin
-- hash based dereplication
-- other faster alignment softwares
-- pre-clustering based on length limit as to reduce alignment task labor
+- generate accessory gene presence matrix;
+- pairwise SNP count/distance matrix in downstream toolkit;
+- file/dir path operation by Python, less requirment on C++; 
+- add similarity, aligned length threshold, which can be combination with the pairwise full length threshold;
+- hash based dereplication;
+- other faster alignment softwares;
+- pre-clustering based on length limit as to reduce alignment task labor;
+- allow MCL to be in the step of SLC;
 
