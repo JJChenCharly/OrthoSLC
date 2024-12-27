@@ -53,6 +53,7 @@
 * Since blast will automatically 4 digits strain ID in to pdb entries, all 4 digits strain IDs now will be add '0' at the start.
 
 **Update Plan**:
+- direction control of Blast results;
 - generate accessory gene presence matrix;
 - pairwise SNP count/distance matrix in downstream toolkit;
 - file/dir path operation by Python, less requirment on C++; 
