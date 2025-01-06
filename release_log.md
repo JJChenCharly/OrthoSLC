@@ -62,4 +62,5 @@
 - other faster alignment softwares;
 - pre-clustering based on length limit as to reduce alignment task labor;
 - allow MCL to be in the step of SLC;
+- orientation of blast hit control;
 
