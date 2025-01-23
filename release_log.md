@@ -52,6 +52,10 @@
 * **Fixed**:
 * Since blast will automatically 4 digits strain ID in to pdb entries, all 4 digits strain IDs now will be add '0' at the start.
 
+ `0.2.4` -> current version `1.0.0`<br>
+ * Updated sortable mission_spliter for psudo-process-pool.
+
+
 **Update Plan**:
 - direction control of Blast results;
 - generate accessory gene presence matrix;
