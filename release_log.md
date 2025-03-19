@@ -62,5 +62,6 @@
 - pre-clustering based on length limit as to reduce alignment task labor;
 - allow MCL to be in the step of SLC;
 - orientation control of blast hit;
-- task amount notice before mission spliter (do not assign empty task list to process/threads) 
+- task amount notice before mission spliter (do not assign empty task list to process/threads)
+- allow length similarity to be MCL weight;
 
