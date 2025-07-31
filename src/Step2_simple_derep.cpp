@@ -1,18 +1,23 @@
+#define WRITER_BUF 1 // MB
+#define KEEP_SHORT_ID false // MB
+#define MAP_RESERVE 5000 // average of EC
+
 #include "ThreadPool.h"
+#include "Utils.hpp"
 
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <unordered_set>
 #include <filesystem>
 
 namespace fs = std::filesystem;
+using namespace fasta;
+
 
 int main(int argc, char** argv) {
     // parameter parsing
     std::string strain_info_tsv_pth;
+    std::string copy_info_pth;
     std::string rr_ed_dir;
+    bool keyInclude = KEEP_SHORT_ID;
     int process_num = 1;
 
     for (int i = 1; i < argc; ++i)
@@ -25,6 +30,10 @@ int main(int argc, char** argv) {
         {
             rr_ed_dir = argv[i + 1];
         }
+        else if (std::string(argv[i]) == "--copy_info_path" || std::string(argv[i]) == "-c")
+        {
+            copy_info_pth = argv[i + 1];
+        }
         else if (std::string(argv[i]) == "--thread_number" || std::string(argv[i]) == "-u")
         {
             process_num = std::stoi(argv[i + 1]);
@@ -33,10 +42,11 @@ int main(int argc, char** argv) {
         {
             std::cout << "Thanks for using OrthoSLC! (version: " << __version__ << ")\n\n";
             std::cout << "Usage: Step2_simple_derep -i input_file -o output/ [options...]\n\n";
-            std::cout << "  -i or --input_path -----> <txt> path/to/file/output/by/Step1\n";
-            std::cout << "  -o or --output_path ----> <dir> path/to/output/directory\n";
-            std::cout << "  -u or --thread_number --> <int> thread number, default: 1\n";
-            std::cout << "  -h or --help -----------> display this information\n";
+            std::cout << "  -i or --input_path ------> <txt> path/to/file/output/by/Step1\n";
+            std::cout << "  -o or --output_path -----> <dir> path/to/output/directory\n";
+            std::cout << "  -c or --copy_info_path --> <txt> path/to/output/copy_info.txt\n";
+            std::cout << "  -u or --thread_number ---> <int> thread number, default: 1\n";
+            std::cout << "  -h or --help ------------> display this information\n";
             exit(0);
         }
     }
@@ -52,104 +62,84 @@ int main(int argc, char** argv) {
         exit(0);
     }
 
+    fs::path parent_copy_info_pth = fs::path(copy_info_pth).parent_path();
+    if (!(fs::exists(parent_copy_info_pth))) {
+        std::cerr << "Error: parent path provided to '-c or --copy_info_path' does not exist. 路径不存在\n";
+        exit(0);
+    }
+
     // if op path exit
     if (!(fs::exists(rr_ed_dir))){
         fs::create_directory(rr_ed_dir);
     }
     
     // get abs pth and short id ----
-    std::string a_row;
-
-    std::vector<std::string> pth_v, s_id_v;
-
-    std::ifstream strain_in_put(strain_info_tsv_pth);
-
-    std::string sid, naam, abs_p;
-    while (getline(strain_in_put, a_row)) {
-
-        std::stringstream ss(a_row);
-        std::string key, value;
-        std::getline(ss, sid, '\t');
-        std::getline(ss, naam, '\t');
-        std::getline(ss, abs_p);
-
-        pth_v.push_back(abs_p);
-        s_id_v.push_back(sid);
-    }
-    strain_in_put.close();
-
-    int task_len = pth_v.size();
+    tsv::Map pth_m;
+    tsv::readTSV(strain_info_tsv_pth, pth_m);
 
     // mt ----
+    // Thread-safe data structures for copy info
+    tsv::Map copy_info;
+    std::mutex copy_info_mutex;
+    void (*TSVwriterFp)(const std::string&, const tsv::Map&) 
+        = keyInclude 
+            ? &tsv::writeTSVWithKey 
+            : &tsv::writeTSV;
+
+
     ThreadPool pool(process_num);
+    // 存储所有任务的 future 对象
+    std::vector<std::future<void>> futures;
 
-    for(int i = 0; i < task_len; ++i) {
-        std::string in_p = pth_v[i];
-        std::string s_id = s_id_v[i];
-        std::string* op = &rr_ed_dir;
-        pool.enqueue([in_p, s_id, op] { // regradless of number of input parameter
-            // read in
-            std::ifstream fasta_in_put(in_p);
-
+    for (const auto& kv : pth_m) {
+        const std::string& in_p = kv.second[2];
+        const std::string& save_name = kv.second[1];
+        const std::string& s_id = kv.first;
+        const std::string* op = &rr_ed_dir;
+        futures.emplace_back(pool.enqueue([in_p, save_name, s_id, op, &copy_info, &copy_info_mutex] { // regradless of number of input parameter
+            // read in file is 
+            Reader reader(in_p);
             // for file to save
-            std::string file_naam = fs::path(in_p).filename();
-            std::string op_full_path = fs::path(*op) / fs::path(file_naam);
-            std::ofstream fasta_out_put(op_full_path, std::ios::trunc);
+            // std::string file_naam = fs::path(in_p).filename();
+            std::string op_full_path = fs::path(*op) / fs::path(save_name + ".fasta");
+            Writer writer(op_full_path, WRITER_BUF * 1024 * 1024);
 
-            std::string a_line, info;
-            std::string a_seq = "";
+            DeduplicatorExact dedup;  // or DeduplicatorExact for perfect identity
+            dedup.reserve(MAP_RESERVE);
+
             int seq_id = 0; // start
+            std::string header, seq;
+             while (reader.next(header, seq)) {
+                const std::string id = header.substr(0, header.find(' '));
 
-            std::unordered_set<std::string> added_seq = {"added_seq"};
-
-            // skip the first void seq write-in \n
-            getline (fasta_in_put, a_line);
-            info = a_line.substr(1);
-
-            int saver;
-            while (getline (fasta_in_put, a_line)) {
-                
-                if (a_line[0] == '>') { // if the row of id 
-
-                    // operate on previous SeqRecord using previous seq_id
-                    if (added_seq.count(a_seq) == 0) { // if no prescence before, need comparison with find
-                        added_seq.insert(a_seq);
-
-                        fasta_out_put << ">" + s_id + "-" << seq_id << " " + info + "\n"; // using previour seq_id
-                        seq_id++;
-
-                        // save 60 nchar a row
-                        for (saver = 0; saver < a_seq.length(); saver += 60) {
-                            fasta_out_put << a_seq.substr(saver, 60) + "\n";
-                        }
-                        // cover previous seq_id
-                    }
-                    
-                    info = a_line.substr(1);
-                    // cover previous a_seq
-                    a_seq = ""; // reset a_seq
-                } else {
-                    a_seq = a_seq + a_line;
+                bool is_new = dedup.add_and_get(seq, id).second;
+                if (is_new) {
+                    std::string ortho_id = s_id + "-" + std::to_string(seq_id);
+                    seq_id++;
+                    writer.write(ortho_id + " " + header, seq);
                 }
             }
-            
-            // save last seq rec
-            if (added_seq.count(a_seq) == 0) {// if no prescence before
-                // added_seq.insert(a_seq); no need to insert last one
+            writer.flush();
 
-                fasta_out_put << ">" + s_id + "-" << seq_id << " " + info + "\n"; // using previour seq_id
-                
-                // save 60 nchar a row
-                for (saver = 0; saver < a_seq.length(); saver += 60) {
-                    fasta_out_put << a_seq.substr(saver, 60) + "\n";
+            std::unique_lock<std::mutex> lock(copy_info_mutex);
+            const auto& hashMap = dedup.map();
+            for (const auto& [key, vec] : hashMap) {
+                if (vec.size() > 1) {
+                    copy_info.emplace(vec[0], vec);
                 }
-            } 
+            }
+            lock.unlock();
 
-            fasta_in_put.close();
-            fasta_out_put.close();
-            return 0;
-        });
+            return;
+        }));
     }
+
+    // COPY INFO ----
+    // 等待所有任务完成
+    for (auto& future : futures) {
+        future.wait();
+    }
+    TSVwriterFp(copy_info_pth, copy_info);
 
     return 0;
 }

@@ -16,31 +16,42 @@ else
     exit
 fi
 
-g++ -std=c++17 \
-$1"/Step1_preparation.cpp" \
--o $2"/Step1_preparation" && \
+util_path=$1"/Utils.cpp"
+
+cp $1"/Step1_preWalk.py" $2"/Step1_preWalk.py" && \
 g++ -std=c++17 -pthread \
 $1"/Step2_simple_derep.cpp" \
--o $2"/Step2_simple_derep" && \
+$util_path \
+-o $2"/Step2_simple_derep" -O2 && \
 g++ -std=c++17 -pthread \
 $1"/Step3_pre_cluster.cpp" \
--o $2"/Step3_pre_cluster" && \
-cp $1"/Blast.py" $2"/Blast.py" && \
+$util_path \
+-o $2"/Step3_pre_cluster" -O2 && \
+cp $1"/OrthoSLC.py" $2"/OrthoSLC.py" && \
 cp $1"/Step4_makeblastdb.py" $2"/Step4_makeblastdb.py" && \
 cp $1"/Step4_reciprocal_blast.py" $2"/Step4_reciprocal_blast.py" && \
 g++ -std=c++17 -pthread \
 $1"/Step5_query_binning.cpp" \
--o $2"/Step5_query_binning" && \
+-o $2"/Step5_query_binning" -O2 && \
 g++ -std=c++17 -pthread \
 $1"/Step6_filter_n_bin.cpp" \
--o $2"/Step6_filter_n_bin" && \
+-o $2"/Step6_filter_n_bin" -O2 && \
 g++ -std=c++17 -pthread \
 $1"/Step7_RBF.cpp" \
--o $2"/Step7_RBF" && \
+-o $2"/Step7_RBF" -O2 && \
+cp $1"/Step8_MCL.py" $2"/Step8_MCL.py" && \
+g++ -std=c++17 \
+$1/"cluster_fusion.cpp" \
+-o $2"/cluster_fusion" -O2 && \
 g++ -std=c++17 -pthread \
 $1"/Step8_SLC.cpp" \
--o $2"/Step8_SLC" && \
+-o $2"/Step8_SLC" -O2 && \
 g++ -std=c++17 -pthread \
 $1"/Step9_write_clusters.cpp" \
--o $2"/Step9_write_clusters" && \
+$util_path \
+-o $2"/Step9_write_clusters" -O2 && \
+cp $1"/TK_kalign.py" $2"/TK_kalign.py" && \
+cp $1"/TK_mafft.py" $2"/TK_mafft.py" && \
+cp $1"/TK_AlnConcat.py" $2"/TK_AlnConcat.py" && \
+cp $1"/TK_SNPmat.py" $2"/TK_SNPmat.py" && \
 echo "Done"

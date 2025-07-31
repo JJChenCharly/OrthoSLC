@@ -135,6 +135,7 @@ int main(int argc, char** argv) {
     }
 
     ThreadPool pool(process_num);
+    std::vector<std::future<void>> futures;
 
     m_lst::iterator it = mission_lst_.begin();
 
@@ -143,110 +144,115 @@ int main(int argc, char** argv) {
         std::vector<std::string*> fls = it->second;
         std::string* op = &out_dir;
 
-        pool.enqueue([op_ind, fls, op]{
-            
-            //clustering
-            std::unordered_map<std::string, long int> ptr_coll;
-            std::vector<long int> bin_connector;
-            std::vector<std::unordered_set<std::string>> to_save;
-
-            long int _ind_every = 0;
-            std::string a_line;
-
-            for (std::size_t i = 0; i < fls.size(); ++i) {
+        futures.emplace_back(
+            pool.enqueue([op_ind, fls, op]{
                 
-                std::ifstream a_in(*fls[i]);
+                //clustering
+                std::unordered_map<std::string, long int> ptr_coll;
+                std::vector<long int> bin_connector;
+                std::vector<std::unordered_set<std::string>> to_save;
 
-                while(getline(a_in, a_line)) {
+                long int _ind_every = 0;
+                std::string a_line;
+
+                for (std::size_t i = 0; i < fls.size(); ++i) {
                     
-                    std::unordered_set<std::string> elements;
-                    std::stringstream ss(a_line);
-                    std::string element;
+                    std::ifstream a_in(*fls[i]);
 
-                    while (std::getline(ss, element, '\t')) {
-                        elements.insert(element);
-                    }
-                    to_save.push_back(elements);
+                    while(getline(a_in, a_line)) {
+                        
+                        std::unordered_set<std::string> elements;
+                        std::stringstream ss(a_line);
+                        std::string element;
 
-                    long int ind_to_go = _ind_every;
+                        while (std::getline(ss, element, '\t')) {
+                            elements.insert(element);
+                        }
+                        to_save.push_back(elements);
 
-                    bin_connector.push_back(_ind_every);
+                        long int ind_to_go = _ind_every;
 
-                    // traverse set just made
-                    std::unordered_set<std::string>::iterator _it_ = elements.begin();
+                        bin_connector.push_back(_ind_every);
 
-                    while (_it_ != elements.end()) {
-                        if (ptr_coll.count(*_it_) > 0) { // if prescence before
-                            long int ind_ = ptr_coll.at(*_it_);
+                        // traverse set just made
+                        std::unordered_set<std::string>::iterator _it_ = elements.begin();
 
-                            while (bin_connector[ind_] != ind_) { // to the lowest ind
-                                ind_ = bin_connector[ind_];
-                            }
+                        while (_it_ != elements.end()) {
+                            if (ptr_coll.count(*_it_) > 0) { // if prescence before
+                                long int ind_ = ptr_coll.at(*_it_);
 
-                            long int its_lowest_bin_ind = ind_;
+                                while (bin_connector[ind_] != ind_) { // to the lowest ind
+                                    ind_ = bin_connector[ind_];
+                                }
 
-                            if (its_lowest_bin_ind == ind_to_go) {
-                                ++_it_;
-                                continue;
-                            } 
+                                long int its_lowest_bin_ind = ind_;
 
-                            if (its_lowest_bin_ind > ind_to_go) {
-                                
-                                long int tmp = ind_to_go;
+                                if (its_lowest_bin_ind == ind_to_go) {
+                                    ++_it_;
+                                    continue;
+                                } 
+
+                                if (its_lowest_bin_ind > ind_to_go) {
+                                    
+                                    long int tmp = ind_to_go;
+                                    
+                                    ind_to_go = its_lowest_bin_ind;
+                                    its_lowest_bin_ind = tmp;
+                                }  
+
+                                to_save[its_lowest_bin_ind].insert(to_save[ind_to_go].begin(), to_save[ind_to_go].end());
+
+                                to_save[ind_to_go].clear();
+
+                                bin_connector[ind_to_go] = its_lowest_bin_ind;
                                 
                                 ind_to_go = its_lowest_bin_ind;
-                                its_lowest_bin_ind = tmp;
-                            }  
 
-                            to_save[its_lowest_bin_ind].insert(to_save[ind_to_go].begin(), to_save[ind_to_go].end());
-
-                            to_save[ind_to_go].clear();
-
-                            bin_connector[ind_to_go] = its_lowest_bin_ind;
+                            }  else { // if no prescence
+                                ptr_coll[*_it_] = ind_to_go;
+                            }
+                            ++_it_;
                             
-                            ind_to_go = its_lowest_bin_ind;
-
-                        }  else { // if no prescence
-                            ptr_coll[*_it_] = ind_to_go;
                         }
-                        ++_it_;
-                        
+                        _ind_every++;
                     }
-                    _ind_every++;
+                    a_in.close();
                 }
-                a_in.close();
-            }
 
-            // saving
-            std::ofstream a_out(*op + "/" + op_ind + ".txt", std::ios::trunc);
-            
-            std::vector<std::unordered_set<std::string>>::iterator a_set = to_save.begin();
-            while (a_set != to_save.end()) {
-                if (a_set->empty()) {
+                // saving
+                std::ofstream a_out(*op + "/" + op_ind + ".txt", std::ios::trunc);
+                
+                std::vector<std::unordered_set<std::string>>::iterator a_set = to_save.begin();
+                while (a_set != to_save.end()) {
+                    if (a_set->empty()) {
+                        ++a_set;
+                        continue;
+                    } else {
+                        std::unordered_set<std::string>::iterator an_id = a_set->begin();
+                        size_t last_or_not = 0;
+                        size_t size = a_set->size();
+                        while (an_id != a_set->end()) {
+                            last_or_not++; 
+                            if (last_or_not == size) {
+                                a_out << *an_id << "\n";
+                            } else {
+                                a_out << *an_id << "\t";
+                            }
+                            an_id++;
+                        }
+
+                    }
                     ++a_set;
-                    continue;
-                } else {
-                    std::unordered_set<std::string>::iterator an_id = a_set->begin();
-                    size_t last_or_not = 0;
-                    size_t size = a_set->size();
-                    while (an_id != a_set->end()) {
-                        last_or_not++; 
-                        if (last_or_not == size) {
-                            a_out << *an_id << "\n";
-                        } else {
-                            a_out << *an_id << "\t";
-                        }
-                        an_id++;
-                    }
-
                 }
-                ++a_set;
-            }
 
-            a_out.close();
+                a_out.close();
 
-        });
+            })
+        );
         it++;
+    }
+    for (auto& future : futures) {
+        future.wait();
     }
 
     return 0;

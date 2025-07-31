@@ -3,9 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <unordered_map>
 #include <filesystem>
-#include <mutex>
 
 namespace fs = std::filesystem;
 
@@ -95,6 +95,7 @@ int main(int argc, char** argv) {
     std::mutex op_mutex[bin_level];
 
     ThreadPool pool(process_num);
+    std::vector<std::future<void>> futures;
 
     for(int i = 0; i < missions.size(); ++i) {
         std::string* in_p = &missions[i];
@@ -103,53 +104,60 @@ int main(int argc, char** argv) {
         std::mutex* LOCK = op_mutex;
         bool lock_or_not = no_lock_mode;
 
-        pool.enqueue([in_p, bin_op, b_level, lock_or_not, LOCK] {
-            std::ifstream a_blast_op(*in_p);
+        futures.emplace_back(
+            pool.enqueue([in_p, bin_op, b_level, lock_or_not, LOCK] {
+                std::ifstream a_blast_op(*in_p);
 
-            std::hash<std::string> hash_fn;
+                std::hash<std::string> hash_fn;
 
-            std::unordered_map<int, std::vector<std::string>> bins_to_save;
-            std::string a_line;
+                std::unordered_map<int, std::vector<std::string>> bins_to_save;
+                std::string a_line;
+                std::string query, subject;
 
-            while (std::getline(a_blast_op, a_line)) {
-                a_line = a_line + "\n";
+                while (std::getline(a_blast_op, a_line)) {
+                    std::stringstream ss_(a_line);
 
-                std::string query = a_line.substr(0, a_line.find("\t"));
-                
-                size_t h = hash_fn(query);
-                int b = h % b_level;
-                
-                bins_to_save[b].push_back(a_line);
-            }
-            a_blast_op.close();
-
-            // saver ----
-            for (auto it = bins_to_save.begin(); it != bins_to_save.end(); ++it) {
-
-                if (lock_or_not) {
-                    std::ofstream save_into_a_bin(fs::path(*bin_op) / fs::path(std::to_string(it->first) + ".txt"), std::ios::app);
-
-                    for (auto const &item : it->second) {
-                        save_into_a_bin << item;
-                    }
-
-                    save_into_a_bin.close();
+                    // std::string query = a_line.substr(0, a_line.find("\t"));
+                    std::getline(ss_, query, '\t');
+                    std::getline(ss_, subject, '\t');
+                    if (query.substr(0, query.find("-")) == subject.substr(0, subject.find("-"))) continue;
                     
-                } else {
-                    std::unique_lock<std::mutex> lock(LOCK[it->first]);
+                    size_t h = hash_fn(query);
+                    int b = h % b_level;
                     
-                    std::ofstream save_into_a_bin(fs::path(*bin_op) / fs::path(std::to_string(it->first) + ".txt"), std::ios::app);
-
-                    for (auto const &item : it->second) {
-                        save_into_a_bin << item;
-                    }
-
-                    save_into_a_bin.close();
-                    lock.unlock();
+                    bins_to_save[b].push_back(a_line + "\n");
                 }
-            }
+                a_blast_op.close();
 
-        });
+                // saver ----
+                bool use_lock = !lock_or_not;  // rename for clarity
+
+                auto save_bin = [&](int bin_id, const std::vector<std::string>& items) {
+                    // build the path correctly:
+                    auto filename  = std::to_string(bin_id) + ".txt";
+                    auto full_path = fs::path(*bin_op) / filename;
+
+                    if (use_lock) {
+                        std::unique_lock<std::mutex> lock(LOCK[bin_id]);
+                        std::ofstream ofs(full_path, std::ios::app);
+                        for (auto const &line : items) ofs << line;
+                    } else {
+                        std::ofstream ofs(full_path, std::ios::app);
+                        for (auto const &line : items) ofs << line;
+                    }
+                };
+
+                for (auto const &kv : bins_to_save) {
+                    save_bin(kv.first, kv.second);
+                }
+            })
+        );
+
+
+    }
+    
+    for (auto& future : futures) {
+        future.wait();
     }
 
     return 0;

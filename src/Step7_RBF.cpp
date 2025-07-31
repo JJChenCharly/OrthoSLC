@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
     
     // mt ----
     ThreadPool pool(process_num);
+    std::vector<std::future<void>> futures;
 
     std::mutex op_mutex[bin_level];
 
@@ -105,61 +106,69 @@ int main(int argc, char** argv) {
         std::mutex* LOCK = op_mutex;
         int b_level = bin_level;
         bool lock_or_not = no_lock_mode;
-        
-        pool.enqueue([op, in_p, LOCK, b_level, lock_or_not]{
 
-            std::ifstream a_bin_op(*in_p);
-            std::unordered_set<std::string> rec;
-            std::unordered_map<int, std::vector<std::string>> bins_to_save;
+        futures.emplace_back(
+            pool.enqueue([op, in_p, LOCK, b_level, lock_or_not]{
 
-            std::hash<std::string> hash_fn;
+                std::ifstream a_bin_op(*in_p);
+                std::unordered_set<std::string> rec;
+                std::unordered_map<int, std::vector<std::string>> bins_to_save;
 
-            std::string a_line;
-            while(getline(a_bin_op, a_line)) {
-                if (rec.count(a_line) != 0) { // if prescence 
-                    std::string first;
+                std::hash<std::string> hash_fn;
+
+                std::string a_line;
+                std::string first, second, pair;
+                while(getline(a_bin_op, a_line)) {
                     std::getline(std::stringstream(a_line), first, '\t');
+                    std::getline(std::stringstream(a_line), second, '\t');
+                    pair = first + second;
+                    if (rec.count(pair) != 0) { // if prescence
+                        size_t h = hash_fn(first);
+                        int b = h % b_level;
 
-                    size_t h = hash_fn(first);
-                    int b = h % b_level;
-
-                    bins_to_save[b].push_back(a_line + "\n");
-                    
-                    rec.erase(a_line);
-                } else {
-                    rec.insert(a_line);
-                }
-            }
-
-            a_bin_op.close();
-
-            // saving ----
-            // saving ----
-            for (auto it = bins_to_save.begin(); it != bins_to_save.end(); ++it) {
-
-                if (lock_or_not) {
-                    std::ofstream save_into_a_bin(fs::path(*op) / fs::path(std::to_string(it->first) + ".txt"), std::ios::app);
-
-                    for (auto const &item : it->second) {
-                        save_into_a_bin << item;
+                        bins_to_save[b].push_back(a_line + "\n");
+                        
+                        rec.erase(pair);
+                    } else {
+                        rec.insert(pair);
                     }
-
-                    save_into_a_bin.close();
-                    
-                } else {
-                    std::unique_lock<std::mutex> lock(LOCK[it->first]);
-                    
-                    std::ofstream save_into_a_bin(fs::path(*op) / fs::path(std::to_string(it->first) + ".txt"), std::ios::app);
-
-                    for (auto const &item : it->second) {
-                        save_into_a_bin << item;
-                    }
-
-                    save_into_a_bin.close();
-                    lock.unlock();
                 }
-            }          
-        });
+
+                a_bin_op.close();
+
+                // saving ----
+                bool use_lock = lock_or_not;  // or invert, depending on your flag’s meaning
+                auto save_bin = [&](int bin_id, const std::vector<std::string>& items) {
+                    // build "output_dir/<bin_id>.txt"
+                    std::string fname = std::to_string(bin_id) + ".txt";
+                    auto outp    = fs::path(*op) / fname;
+
+                    if (use_lock) {
+                        std::unique_lock<std::mutex> lk(LOCK[bin_id]);
+                        std::ofstream ofs(outp, std::ios::app);
+                        for (auto const &line : items)
+                            ofs << line;
+                        // ofs and lk destructors close file & release lock
+                    }
+                    else {
+                        std::ofstream ofs(outp, std::ios::app);
+                        for (auto const &line : items)
+                            ofs << line;
+                        // ofs destructor closes file
+                    }
+                };
+
+                for (auto const &kv : bins_to_save) {
+                    save_bin(kv.first, kv.second);
+                }
+                   
+            })
+        );
+        
+
+    }
+    for (auto& future : futures) {
+        future.wait();
     }
 
     return 0;

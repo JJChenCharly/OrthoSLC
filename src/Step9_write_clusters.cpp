@@ -1,64 +1,50 @@
 #include "ThreadPool.h"
+#include "Utils.hpp"
 
 #include <filesystem>
-#include <string>
-#include <iostream>
-#include <vector>
-#include <unordered_map>
 #include <unordered_set>
-#include <fstream>
-#include <sstream>
 #include <utility>
+#include <cmath>
 
 namespace fs = std::filesystem;
+using namespace fasta;
+
+constexpr std::size_t WRITER_BUF = 1 * 1024 * 1024; // 2 MB buffer for fasta::Writer
 
 int main(int argc, char** argv) {
-// parameter parsing ----
+    // parameter parsing ----
     std::string final_cluster_path;
     std::string output_path;
     std::string id_info_path;
     std::string pre_cluster_path;
-    std::string dereped_cated_fasta_pth;
-    int total_count;
+    std::string derep_fasta_path;
+    int total_count = 0;
     std::string cluster_type = "accessory,strict,surplus";
     int process_num = 1;
+    int pct_threshold = 0;
 
-    for (int i = 1; i < argc; ++i)
-    {
-        if (std::string(argv[i]) == "--input_path" || std::string(argv[i]) == "-i")
-        {
-            final_cluster_path = argv[i + 1];
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "-i" || arg == "--input_path") {
+            final_cluster_path = argv[++i];
+        } else if (arg == "-o" || arg == "--output_path") {
+            output_path = argv[++i];
+        } else if (arg == "-f" || arg == "--fasta_path") {
+            derep_fasta_path = argv[++i];
+        } else if (arg == "-m" || arg == "--id_info_path") {
+            id_info_path = argv[++i];
+        } else if (arg == "-p" || arg == "--pre_cluster_path") {
+            pre_cluster_path = argv[++i];
+        } else if (arg == "-c" || arg == "--total_count") {
+            total_count = std::stoi(argv[++i]);
+        } else if (arg == "-u" || arg == "--thread_number") {
+            process_num = std::stoi(argv[++i]);
+        } else if (arg == "-t" || arg == "--cluster_type") {
+            cluster_type = argv[++i];
+        } else if (arg == "-a" || arg == "--pct_threshold") {
+            pct_threshold = std::stoi(argv[++i]);
         }
-        else if (std::string(argv[i]) == "--output_path" || std::string(argv[i]) == "-o")
-        {
-            output_path = argv[i + 1];
-        }
-        else if (std::string(argv[i]) == "--thread_number" || std::string(argv[i]) == "-u")
-        {
-            process_num = std::stoi(argv[i + 1]);
-        }
-        else if (std::string(argv[i]) == "--cluster_type" || std::string(argv[i]) == "-t")
-        {
-            cluster_type = argv[i + 1];
-        }
-        else if (std::string(argv[i]) == "--fasta_path" || std::string(argv[i]) == "-f")
-        {
-            dereped_cated_fasta_pth = argv[i + 1];
-        }
-        else if (std::string(argv[i]) == "--pre_cluster_path" || std::string(argv[i]) == "-p")
-        {
-            pre_cluster_path = argv[i + 1];
-        }
-        else if (std::string(argv[i]) == "--id_info_path" || std::string(argv[i]) == "-m")
-        {
-            id_info_path = argv[i + 1];
-        }
-        else if (std::string(argv[i]) == "--total_count" || std::string(argv[i]) == "-c")
-        {
-            total_count = std::stoi(argv[i + 1]);
-        }
-        else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h")
-        {
+        else if (arg == "-h" || arg == "--help") {        
             std::cout << "Thanks for using OrthoSLC! (version: " << __version__ << ")\n\n";
             std::cout << "Usage: Step9_write_clusters -i input_path -o output/ -f concatenated.fasta [options...]\n\n";
             std::cout << "options:\n";
@@ -68,224 +54,156 @@ int main(int argc, char** argv) {
             std::cout << "  -m or --id_info_path ------> <txt> path/to/output/id_info_table from Step 3\n";
             std::cout << "  -p or --pre_cluster_path --> <txt> path/to/pre_clustered_file from Step 3\n";
             std::cout << "  -c or --total_count -------> <int> amonut of genomes to analyze\n";
+            std::cout << "  -a or --pct_threshold -----> <float> only write accessory clusters shared by >=n% (0<=n<100) of genomes, default: 0\n";
             std::cout << "  -t or --cluster_type ------> <txt> select from < accessory / strict / surplus >, separate by ',', all types if not specified\n";
             std::cout << "  -u or --thread_number -----> <int> thread number, default: 1\n";
             std::cout << "  -h or --help --------------> display this information\n";
             exit(0);
         }
     }
-    // if file path exist
-    if (!(fs::exists(final_cluster_path))) {
-        std::cerr << "Error: path provided to '-i or --input_path' does not exist. 路径不存在\n";
-        exit(0);
-    }
-    else if (!(fs::exists(dereped_cated_fasta_pth))) {
-        std::cerr << "Error: path provided to '-f or --fasta_path' does not exist. 路径不存在\n";
-        exit(0);
-    }
-    else if (!(fs::exists(pre_cluster_path))) {
-        std::cerr << "Error: path provided to '-p or --pre_cluster_path' does not exist. 路径不存在\n";
-        exit(0);
-    }
-    else if (!(fs::exists(id_info_path))) {
-        std::cerr << "Error: path provided to '-m or --id_info_path' does not exist. 路径不存在\n";
-        exit(0);
-    }
 
-    fs::path parent_output_path = fs::path(output_path).parent_path();
-    if (!(fs::exists(parent_output_path))) {
-        std::cerr << "Error: parent path provided to '-o or --output_path' does not exist. 路径不存在\n";
-        exit(0);
+    // sanity checks
+    if (final_cluster_path.empty() || output_path.empty() || derep_fasta_path.empty() ||
+        id_info_path.empty() || pre_cluster_path.empty() || total_count <= 0) {
+        return 1;
     }
+    if (!fs::exists(final_cluster_path) || !fs::exists(derep_fasta_path) ||
+        !fs::exists(id_info_path) || !fs::exists(pre_cluster_path) ||
+        (pct_threshold < 0 || pct_threshold >= 100)) {
+        std::cerr << "Error: invalid argument or file not found.\n";
+        return 1;
+    }
+    fs::create_directories(output_path);
 
-// if op path exit ----
-    std::unordered_map<std::string, bool> types_to_write{
+    // setup cluster type directories
+    std::unordered_map<std::string,bool> types_to_write{
         {"accessory_cluster", false},
         {"strict_core", false},
         {"surplus_core", false}
     };
-
-    if (!(fs::exists(output_path))) {
-        fs::create_directory(output_path);
-    }
-
-    // types to write ----
-    std::vector<std::string> to_write;
-
     std::stringstream ss(cluster_type);
     std::string token;
     while (std::getline(ss, token, ',')) {
-        to_write.push_back(token);
+        if (token == "accessory") { types_to_write["accessory_cluster"] = true;
+            fs::create_directory(output_path + "/accessory_cluster"); }
+        else if (token == "strict")  { types_to_write["strict_core"] = true;
+            fs::create_directory(output_path + "/strict_core"); }
+        else if (token == "surplus") { types_to_write["surplus_core"] = true;
+            fs::create_directory(output_path + "/surplus_core"); }
     }
 
-    for (const auto& str : to_write) {
-        if (str == "accessory") {
-            types_to_write.at("accessory_cluster") = true;
-            std::filesystem::path dir_path = fs::path(output_path) / fs::path("accessory_cluster");
-            if (!(fs::exists(dir_path))) {
-                fs::create_directory(dir_path);
-            }
-        } else if (str == "strict") {
-            types_to_write.at("strict_core") = true;
-            std::filesystem::path dir_path = fs::path(output_path) / fs::path("strict_core");
-            if (!(fs::exists(dir_path))) {
-                fs::create_directory(dir_path);
-            }
-        } else if (str == "surplus") {
-            types_to_write.at("surplus_core") = true;
-            std::filesystem::path dir_path = fs::path(output_path) / fs::path("surplus_core");
-            if (!(fs::exists(dir_path))) {
-                fs::create_directory(dir_path);
-            }
-        }
-    }
-    
-// mission list and final cluster ----
-    std::ifstream final_CLUSTER_file(final_cluster_path);
-    std::vector<std::vector<std::string>> CLUSTERS;
-    // [[id1,id2], [id3, id4]]
-    
-    std::string a_line;
 
-    while (getline(final_CLUSTER_file, a_line)) {
-        std::vector<std::string> v;
-        std::stringstream iss(a_line);
-        std::string element;
 
-        while (std::getline(iss, element, '\t')) {
-            v.push_back(element);
-        }
-    
-        CLUSTERS.push_back(v);
-    }
-    final_CLUSTER_file.close();
-
-// id pre cluster dcit ----
-    std::ifstream pre_CLUSTER_file(pre_cluster_path);
-
-    typedef std::unordered_map<std::string, std::string> s_s;
-    s_s id_cluster_dict;
-    // {id1: id1,
-    // id2: id1}
-
-    while (getline(pre_CLUSTER_file, a_line)) {
-        std::vector<std::string> v;
-        std::stringstream iss(a_line);
-        std::string element;
-
-        while (std::getline(iss, element, '\t')) {
-            v.push_back(element);
-
-            id_cluster_dict[element] = v[0];
-        }
-    }
-    pre_CLUSTER_file.close();
-
-// id info dict ----
-    std::ifstream ID_INFO_file(id_info_path);
-    typedef std::unordered_map<std::string, std::string> s_s;
-    s_s id_info_dict;
-
-    while (getline(ID_INFO_file, a_line)) {
-        std::vector<std::string> v;
-        std::stringstream iss(a_line);
-        std::string element;
-
-        while (std::getline(iss, element, '\t')) {
-            v.push_back(element);
-        }
-
-        id_info_dict[v[0]] = v[1];
-    }
-    ID_INFO_file.close();
-    // {id: description}
-
-// dereped cat fasta ----
-    s_s fasta_dict;
-
-    std::ifstream dereped_cat_file(dereped_cated_fasta_pth);
-    
-    // first one
-    getline(dereped_cat_file, a_line);
-    std::string key = a_line.substr(1, a_line.find(" ") - 1);
-    std::string seq = "";
-
-    while (getline(dereped_cat_file, a_line)) {
-        if (a_line[0] == '>') {
-            // save previous one
-            fasta_dict[key] = seq;
-
-            key = a_line.substr(1, a_line.find(" ") - 1);
-            seq = "";
-        } else {
-            seq = seq + a_line + "\n";
-        }
-    }
-    // last one
-    fasta_dict[key] = seq;
-
-    dereped_cat_file.close();
-
-// mt ----
+    // parallel load helper data
     ThreadPool pool(process_num);
+    std::vector<std::future<void>> futures;
 
-    for (const std::vector<std::string>& a_c : CLUSTERS) {
-        std::vector<std::string> the_cluster = a_c;
-        int* total_amount = &total_count;
-        std::unordered_map<std::string, bool>* which_to_write = &types_to_write;
-        std::string op_p = output_path;
-        s_s* ptr_fasta_dict = &fasta_dict;
-        s_s* ptr_id_info_dict = &id_info_dict;
-        s_s* ptr_id_cluster_dict = &id_cluster_dict;
+    std::unordered_map<std::string,std::string> id_cluster_dict;
+    std::unordered_map<std::string,std::string> id_info_dict;
 
-        pool.enqueue([the_cluster, total_amount, which_to_write, op_p, ptr_fasta_dict, ptr_id_info_dict, ptr_id_cluster_dict] {
-            
-            std::unordered_set<std::string> spe_count;
-
-            for (const std::string& s : the_cluster) {
-                spe_count.insert(s.substr(0, s.find("-")));
+    // read final clusters
+    std::vector<std::vector<std::string>> CLUSTERS;
+    futures.emplace_back(
+        pool.enqueue([&final_cluster_path, &CLUSTERS](){
+            std::ifstream in(final_cluster_path);
+            std::string line;
+            while (std::getline(in, line)) {
+                if (line.empty()) continue;
+                std::vector<std::string> cluster;
+                std::stringstream ls(line);
+                std::string id;
+                while (std::getline(ls, id, '\t')) cluster.push_back(id);
+                CLUSTERS.push_back(std::move(cluster));
             }
+        })
+    );
 
-            fs::path file_naam;
-            bool ending = false;
+    // load pre-cluster
+    futures.emplace_back(pool.enqueue([&](){
+        std::ifstream in(pre_cluster_path);
+        std::string a_line;
+        while (std::getline(in, a_line)) {
+            std::vector<std::string> v;
+            std::stringstream iss(a_line);
+            std::string element;
 
-            if (spe_count.size() < *total_amount) {
-                if(which_to_write->at("accessory_cluster")) {
+            while (std::getline(iss, element, '\t')) {
+                v.push_back(element);
 
-                    file_naam = fs::path(op_p) / fs::path("accessory_cluster") / fs::path(the_cluster[0] + ".fasta");
-                } else{
-                    ending = true;
-                }
-            } else {
-                if (the_cluster.size() == *total_amount) {
-                    if (which_to_write->at("strict_core")) {
-                        file_naam = fs::path(op_p) / fs::path("strict_core") / fs::path(the_cluster[0] + ".fasta");
-                    } else {
-                        ending = true;
-                    }
-                } else {
-                    if (which_to_write->at("strict_core")) {
-                        file_naam = fs::path(op_p) / fs::path("surplus_core") / fs::path(the_cluster[0] + ".fasta");
-                    } else {
-                        ending = true;
-                    }
-                }
+                id_cluster_dict[element] = v[0];
             }
-            
-            if (ending) {
-                ;
-            } else {
-                
-                std::ofstream fasta_out_put(file_naam, std::ios::trunc);
+        }
+    }));
+    // load id info
+    futures.emplace_back(pool.enqueue([&id_info_path, &id_info_dict](){
+        std::ifstream in(id_info_path);
+        std::string line;
+        while (std::getline(in, line)) {
+            if (line.empty()) continue;
+            std::istringstream iss(line);
+            std::string id, info;
+            if (std::getline(iss, id, '\t') &&
+                std::getline(iss, info, '\t')) {
+                id_info_dict[id] = info;
+            }
+        }
+    }));
 
-                for (const std::string& a_g : the_cluster) {
-                    fasta_out_put << ">" + a_g + " " + ptr_id_info_dict->at(a_g) + "\n" + ptr_fasta_dict->at(ptr_id_cluster_dict->at(a_g)); 
-                }
-                
-                fasta_out_put.close();
-            } 
-        });   
+    // load fasta
+    std::unordered_map<std::string,std::string> fasta_dict;
+    futures.emplace_back(pool.enqueue([&fasta_dict, &derep_fasta_path](){
+        Reader reader(derep_fasta_path);
+        std::string header, seq;
+        while (reader.next(header, seq)) {
+            
+            auto pos = header.find(' ');
+            std::string gid = (pos == std::string::npos ? header : header.substr(0, pos));
+            
+            // std::string gid = header;
+            fasta_dict[gid] = std::move(seq);
+        }
+    }));
+
+    for (auto & f : futures) f.wait();
+    futures.clear();
+    
+
+    int threshold = static_cast<int>(std::ceil(pct_threshold / 100.0 * total_count));
+
+    // write clusters
+    for (auto & cluster : CLUSTERS) {
+        futures.emplace_back(pool.enqueue([&, cluster](){
+            std::unordered_set<std::string> species_set;
+            for (auto & gid : cluster) {
+                species_set.insert(gid.substr(0, gid.find('-')));
+            }
+            if ((int)species_set.size() < threshold) return;
+
+            bool do_write = false;
+            fs::path out_file;
+            size_t sc = species_set.size();
+            if (sc < (size_t)total_count && types_to_write["accessory_cluster"]) {
+                out_file = fs::path(output_path) / "accessory_cluster" / (cluster[0] + ".fasta");
+                do_write = true;
+            } else if (cluster.size() == (size_t)total_count && types_to_write["strict_core"]) {
+                out_file = fs::path(output_path) / "strict_core" / (cluster[0] + ".fasta");
+                do_write = true;
+            } else if (cluster.size() > (size_t)total_count && types_to_write["surplus_core"]) {
+                out_file = fs::path(output_path) / "surplus_core" / (cluster[0] + ".fasta");
+                do_write = true;
+            }
+            if (!do_write) return;
+
+            Writer writer(out_file.string(), WRITER_BUF);
+            for (auto & gid : cluster) {
+                // std::cout << gid << id_info_dict[gid] << std::endl;
+                // std::cout << gid << fasta_dict[id_cluster_dict[gid]] << std::endl;
+                writer.write(gid + " " + id_info_dict[gid], fasta_dict[id_cluster_dict[gid]]);
+            }
+            writer.flush();
+        }));
     }
+    for (auto & f : futures) f.wait();
 
     return 0;
 }

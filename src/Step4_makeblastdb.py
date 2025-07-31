@@ -3,22 +3,19 @@ import os
 from multiprocessing import Process
 # import numpy as np
 
-from Blast import BLAST
-
-blast_entity = BLAST()
-make_dbs = blast_entity.make_dbs
+from OrthoSLC import makeblastdb, __version__
 
 # parameter parsing
 # directory path of output
-dereped_dir_path = ''
+dereped_dir_path = None
 # directory path of blastdb
-blastdb_dir_path = ''
+blastdb_dir_path = None
 # how many jobs to parallel
 process_number = 1
 # set dbtype: nucl or prot
 dbt = 'nucl'
 # set path to makblastdb bin file
-mbdb = 'makeblastdb'
+mbdb_bin = 'makeblastdb'
 
 argv = sys.argv[1:]
 
@@ -39,7 +36,7 @@ except Exception as ex:
 
 for opt, arg in opts:
     if opt in ['-c', '--path_to_makeblastdb']:
-        mbdb = arg
+        mbdb_bin = arg
     elif opt in ['-i', '--input_path']:
         dereped_dir_path = arg
     elif opt in ['-o', '--output_path']:
@@ -49,7 +46,7 @@ for opt, arg in opts:
     elif opt in ['-t', '--dbtype']:
         dbt = arg
     elif opt in ['-h', '--help']:
-        print("Thanks for using OrthoSLC! (version: " + blast_entity.version + ")\n")
+        print("Thanks for using OrthoSLC! (version: " + __version__ + ")\n")
         print("Usage: python Step4_makeblastdb.py -i input/ -o output/ [options...]\n")
         print("options:\n")
         print("  -i or --input_path -----------> <dir> path/to/input/directory of nr_genomes from Step 2")
@@ -68,36 +65,20 @@ elif not os.path.exists(os.path.dirname(blastdb_dir_path)):
     sys.exit()
 
 if __name__ == "__main__":
-    
-    # mkdir or not
-    if os.path.exists(blastdb_dir_path):
-        pass
-    else:
-        os.mkdir(blastdb_dir_path)
-    
-    mission_lst = os.listdir(dereped_dir_path)
-    
-    mission_lst = [os.path.join(dereped_dir_path, x) for x in mission_lst]
-    
-    mission_lst = BLAST.mission_spliter(mission_lst, 
-                                        process_number
-                                        )
-    
-    # mp
-    jobs = []
-    
-    for sub_mission_lst in mission_lst:
-    
-        p = Process(target = make_dbs,
-                    args = (sub_mission_lst, 
-                            blastdb_dir_path, 
-                            dbt,
-                            mbdb
-                           )
-                   )
-        p.start()
-        jobs.append(p)
+    try:
+        # mkdir or not
+        if os.path.exists(blastdb_dir_path):
+            pass
+        else:
+            os.mkdir(blastdb_dir_path)
 
-
-    for z in jobs:
-        z.join()
+        make_db = makeblastdb(op_path = blastdb_dir_path,
+                            mbdb_bin_path = mbdb_bin,
+                            dbt = dbt)
+        
+        # mp
+        task_packs =[(os.path.join(dereped_dir_path, i), 1) for i in os.listdir(dereped_dir_path)]
+        make_db.Pool_excute(task_packs, process_number)
+    except Exception as e:
+        print(f"Fatal error: {e}", file=sys.stderr)
+        sys.exit(1)

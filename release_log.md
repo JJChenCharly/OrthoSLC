@@ -52,19 +52,14 @@
 * **Fixed**:
 * Since blast will automatically 4 digits strain ID in to pdb entries, all 4 digits strain IDs now will be add '0' at the start.
 
- `0.2.4` -> current version `1.0.0`<br>
- * Updated sortable mission_spliter for psudo-process-pool.
-
+`0.2.4` -> current version `1.0.0`<br>
+- file/dir path operation by Python in Step 1; 
+- add similarity threshold in Step 6;
+- allow bitscore, e-value, pident as MCL clustering weight.
+- allow MCL in Step 8;
 
 **Update Plan**:
-- direction control of Blast results;
-- generate accessory gene presence matrix;
-- pairwise SNP count/distance matrix in downstream toolkit;
-- file/dir path operation by Python, less requirment on C++; 
-- add similarity, aligned length threshold, which can be combination with the pairwise full length threshold;
-- hash based dereplication;
+- pairwise SNP count/distance matrix in downstream toolkit (orthoslc_tk);
+- generate accessory gene presence matrix in orthoslc_tk;
 - other faster alignment softwares;
-- pre-clustering based on length limit as to reduce alignment task labor;
-- allow MCL to be in the step of SLC;
-- orientation of blast hit control;
 

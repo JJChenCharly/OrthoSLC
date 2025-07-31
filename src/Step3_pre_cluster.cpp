@@ -1,12 +1,17 @@
+#define WRITER_BUF 2 // MB
+#define KEEP_SHORT_ID false // MB
+#define MAP_RESRVE_COEF 1250  //5000 * 0.25 * amont of files
+
 #include "ThreadPool.h"
+#include "Utils.hpp"
 
 #include <iostream>
-#include <unordered_map>
-#include <fstream>
 #include <string>
+#include <memory>
 #include <filesystem>
 
 namespace fs = std::filesystem;
+using namespace fasta;
 
 int main(int argc, char** argv) {
     // parameter parsing
@@ -17,6 +22,7 @@ int main(int argc, char** argv) {
     std::string id_info_path;
     std::string pre_cluster_path;
     int process_num = 1;
+    bool keyInclude = KEEP_SHORT_ID;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -97,128 +103,51 @@ int main(int argc, char** argv) {
     }
 
     // read in each fasta and dereplicate all, get seq_len, id_info ----
-    std::ofstream len_info(len_info_path, std::ios::trunc);
-    std::ofstream id_info(id_info_path, std::ios::trunc);
-    std::ofstream dereped_cated_fasta(dereped_cated_fasta_pth, std::ios::trunc);
+
+    // 统计文件数量
+    int file_count = 0;
+    for (const auto& entry : fs::directory_iterator(dereped_dir)) {
+        if (entry.is_regular_file()) {
+            file_count++;
+        }
+    }
     
-    typedef std::unordered_map<std::string, std::vector<std::string>> s_v;
-    typedef std::unordered_map<std::string, std::string> s_s;
-    s_v pre_cluster, each_d; // seq: short_id
-    s_s dereped_cated_dict;
+    Writer cated_fasta_writer(dereped_cated_fasta_pth, WRITER_BUF * 1024 * 1024);
+    DeduplicatorExact dedup;  // or DeduplicatorExact for perfect identity
+    dedup.reserve(MAP_RESRVE_COEF*file_count);
 
-    std::string a_line, seq_id, info;
-
+    std::unordered_map<std::string, std::unordered_map<std::string, const std::string*>> each_spe_d;
+    
     std::string current_path;
     for (const auto& entry : fs::directory_iterator(dereped_dir)) {
         
-        std::string a_seq = "";
         current_path = entry.path();
         current_path = fs::absolute(current_path);
-
-        std::ifstream a_dereped_fasta(current_path);
-
-        // first
-        getline (a_dereped_fasta, a_line);
-
-        size_t  space_indx = a_line.find(" ");
-        seq_id = a_line.substr(1, space_indx - 1);
-        info = a_line.substr(space_indx + 1);
-
-        while (getline (a_dereped_fasta, a_line)) {
-                
-            if (a_line[0] == '>') { // if the row of id 
-                // save id info (a previous info)
-                id_info << seq_id + "\t" + info + "\n";
-
-                // operate on previous SeqRecord using previous seq_id
-                if (pre_cluster.count(a_seq) == 0) { // if no prescence before, need comparison with find
-                    pre_cluster[a_seq].push_back(seq_id);
-
-                    len_info << seq_id + "\t" << a_seq.length() << "\n";
-
-                    std::string rec_id = ">" + seq_id + " " + info + "\n";
-                    dereped_cated_fasta << rec_id;
-
-                    std::string a_seq_to_write = "";
-                    for (int saver = 0; saver < a_seq.length(); saver += 60) {
-                        a_seq_to_write = a_seq_to_write + a_seq.substr(saver, 60) + "\n";
-                    }
-
-                    dereped_cated_fasta << a_seq_to_write;
-
-                    dereped_cated_dict[seq_id] = rec_id + a_seq_to_write;
-
-                    each_d[seq_id.substr(0, seq_id.find("-"))].push_back(seq_id);
-
-                } else { // if presence before
-                    (pre_cluster.at(a_seq)).push_back(seq_id);
-                    
-                }
-                
-                // cover previous seq_id
-                size_t space_indx = a_line.find(" ");
-                seq_id = a_line.substr(1, space_indx - 1);
-                info = a_line.substr(space_indx + 1);
-                
-                // reset previous a_seq
-                a_seq = ""; // reset a_seq
-            } else {
-                a_seq = a_seq + a_line;
-            }
-        }
-
-        // last rec
-        // do not need to add id info
-        id_info << seq_id + "\t" + info + "\n";
-        if (pre_cluster.count(a_seq) == 0) {
-            pre_cluster[a_seq].push_back(seq_id);
-
-            len_info << seq_id + "\t" << a_seq.length() << "\n";
-
-            std::string rec_id = ">" + seq_id + " " + info + "\n";
         
-            dereped_cated_fasta << rec_id;
+        Reader reader(current_path);
+        std::string header, seq;
+        while (reader.next(header, seq)) {
+            size_t fisrt_space = header.find(' ');
+            const std::string id = header.substr(0, fisrt_space);
 
-            std::string a_seq_to_write = "";
-            for (int saver = 0; saver < a_seq.length(); saver += 60) {
-                a_seq_to_write = a_seq_to_write + a_seq.substr(saver, 60) + "\n";
-            }
+            // write original info for each input
+            tsv::id_info_TSVwriter(id_info_path, id, header.substr(fisrt_space+1), 1 * 1024 * 1024);
 
-            dereped_cated_fasta << a_seq_to_write;
+            auto [ seq_ptr, is_new ] = dedup.add_and_get(seq, id);
+            if (is_new) {
+                // the dereplicated concatenated fasta
+                cated_fasta_writer.write(id, seq); 
 
-            dereped_cated_dict[seq_id] = rec_id + a_seq_to_write;
+                // write len for dereplicated ones
+                tsv::len_info_TSVwriter(len_info_path, id, seq.length(), 1 * 1024 * 1024);
 
-            each_d[seq_id.substr(0, seq_id.find("-"))].push_back(seq_id);
+                std::string species = id.substr(0, id.find('-'));
+                each_spe_d[species].emplace(id, seq_ptr);
 
-        } else {
-            (pre_cluster.at(a_seq)).push_back(seq_id);
-        }
-
-        a_dereped_fasta.close();
-    }
-
-    len_info.close();
-    dereped_cated_fasta.close();
-    id_info.close();
-
-    // write pre-cluster ----
-    std::ofstream pre_cluster_f(pre_cluster_path, std::ios::trunc);
-
-    for (const auto& [key, value] : pre_cluster) {
-
-        int LEN = static_cast<int>(value.size());
-        int LEN_1 = LEN - 1;
-
-        for (int i = 0; i <= LEN_1; i++) {
-            if (i == LEN_1) {
-                pre_cluster_f << value[i] + "\n";
-            } else {
-                pre_cluster_f << value[i] + "\t";
             }
         }
     }
-
-    pre_cluster_f.close();
+    cated_fasta_writer.flush();
 
     // nr genomes ----
     // if op path exit
@@ -228,25 +157,51 @@ int main(int argc, char** argv) {
     
     // mt ----
     ThreadPool pool(process_num);
+    
+    std::vector<std::future<void>> futures;
+    
+    // write pre-cluster ----
+    void (*TSVwriterFp)(const std::string&, const tsv::Map&) 
+    = keyInclude 
+        ? &tsv::writeTSVWithKey 
+        : &tsv::writeTSV;
 
-    for (const auto& [key, value] : each_d) {
-        s_s* dereped_cated_dict_ptr = &dereped_cated_dict;
-        std::string* op = &nr_dir;
-
-        pool.enqueue([key, op, dereped_cated_dict_ptr, value] {
-            std::string op_full_path = fs::path(*op) / fs::path(key + ".fasta");
-            std::ofstream a_nr_genome(op_full_path, std::ios::trunc);
-
-            for(const auto& v : value)
-            {
-                a_nr_genome << dereped_cated_dict_ptr->at(v);
+    const auto& hashMap = dedup.map();
+    futures.emplace_back(
+        pool.enqueue(
+            [&pre_cluster_path, &hashMap, &TSVwriterFp](){
+                TSVwriterFp(pre_cluster_path, hashMap);
+                return;
             }
+        )
+    );
+    
+    std::string out_dir = nr_dir;
+    for (const auto& [species, id_map] : each_spe_d) {
+        futures.emplace_back(
+            pool.enqueue(
+                [ species, id_map, out_dir ]() {
+                    // build the filename: <nr_dir>/<species>.fasta
+                    std::string out_path = fs::path(out_dir) / fs::path( species + ".fasta");
+                    // open a fasta::Writer with the same buffer size macro
+                    Writer writer(out_path, WRITER_BUF * 1024 * 1024);
 
-            a_nr_genome.close();
-        });
+                    // write each <id, seq> pair
+                    for (const auto& [id, seq_ptr] : id_map) {
+                        // seq_ptr is const std::string* from your dedup map
+                        writer.write(id, *seq_ptr);
+                    }
 
+                    // flush before destructor (optional—destructor will also flush)
+                    writer.flush();
+                }
+            )
+        );
+        
     }
 
-
+    for (auto& future : futures) {
+        future.wait();
+    }
     return 0;
 }
