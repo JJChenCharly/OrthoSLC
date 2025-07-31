@@ -83,7 +83,7 @@ time $bin_dir/Step7_RBF \
 -u $cpu -L $bin_num -k off
 
 # Step 8 ----
-########### option 1: single linkage clustering ###########
+########### option 1: single linkage clustering (select -w 'none' in Step 6) ###########
 # time $bin_dir/Step8_SLC \
 # -i $wd"/S7_op" \
 # -o $wd"/SLC_1" \
