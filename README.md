@@ -129,7 +129,7 @@ Usage: python Step1_preWalk.py -i input/ -o output/ [options...]
 Step 2 is to remove sequence duplication within each genome (e.g., copies of tRNA, some CDS). This dereplication is equivalent to 100% clustering, to obtain single copy.<br>
 Step 2 **requires the tab separated table output by Step 1 as input**, and specifying a directory (`-o`) for dereplicated files.<br>
 Since, `V1.0.0`, by specifying `-c or --copy_info_path`, program will organize ID of copies (identical sequences), and output file is a tsv where one row is one set of identical copies separated by `\t`.<br>
-Note! Dereplication of OrthoSLC in Step 2 here is to simply record indentical sequences, not by region coverage of reads. Hence, annotated results of a complete circular or near complete genome assembly is suggested. What I usually do is leting [TellSeq](https://universalsequencing.com/pages/tell-seq-technology) handle my genome extract. I always obtain N<sub>50</sub>>4.5Mbp *E.coli* assembly (not complete) with 300~350 RMB/sample (~<50$).
+Note! Dereplication of OrthoSLC in Step 2 here is to simply record indentical sequences, not by region coverage of reads. Hence, annotated results of a complete circular or near complete genome assembly is suggested. What I usually do is leting [TellSeq](https://universalsequencing.com/pages/tell-seq-technology) handle my genome extract. I always obtain N<sub>50</sub>>4.5Mbp *E.coli* assembly (not complete) with 300 to 350 RMB/sample (~<50$).
 
 ```Shell
 $ python3 ./bins/Step2_simple_derep -h
