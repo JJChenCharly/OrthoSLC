@@ -116,7 +116,17 @@ else:
     
 strain_naam_lst = os.listdir(blastdb_dir_path)
 mission_lst = [os.path.join(blastdb_dir_path, x) for x in strain_naam_lst]
-size = [sum([os.path.getsize(os.path.join(i, j)) for j in os.listdir(i)]) for i in mission_lst]
+
+size = []
+for strain_name, directory in zip(strain_naam_lst, mission_lst):
+    representative = os.path.join(directory, f"{strain_name}.nsq")
+    if not os.path.exists(representative):
+        representative = os.path.join(directory, f"{strain_name}.psq")
+    if os.path.exists(representative):
+        size.append(os.path.getsize(representative))
+    else:
+        files = os.listdir(directory)
+        size.append(sum(os.path.getsize(os.path.join(directory, filename)) for filename in files))
 sorted_mission_lst = [(_[1], _[0]) for _ in sorted(zip(size, strain_naam_lst), reverse=True)]
 total_size = sum([_[1] for _ in sorted_mission_lst])
 
@@ -147,3 +157,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Fatal error: {e}", file=sys.stderr)
         sys.exit(1)
+        
