@@ -4,6 +4,27 @@
 
 **OrthoSLC** is a pipline that performs Reciprocal Best Blast Hit (RBBH) Single Linkage Clustering (V1.0.0 onwards allows [mcl](https://github.com/micans/mcl)) to obtain Orthologous Genes, and generate core and accessory genes as final output. <br>
 
+## Table of contents
+- [Readme OrthoSLC (1.0.0)](#readme-orthoslc-100)
+  - [Easy Run](#easy-run)
+  - [You can run each step independently (check `commandline_template.sh`)](#you-can-run-each-step-independently-check-commandline_templatesh)
+    - [Step 1 Annotate Genome information preparation](#step-1-annotate-genome-information-preparation)
+    - [Step 2 FASTA dereplication](#step-2-fasta-dereplication)
+    - [Step 3 Pre-clustering of using all dereplicated FASTAs and non-redundant genome generation](#step-3-pre-clustering-of-using-all-dereplicated-fastas-and-non-redundant-genome-generation)
+    - [Step 4 Reciprocal Blast](#step-4-reciprocal-blast)
+    - [Step 5 query binning](#step-5-query-binning)
+    - [Step 6 Filtering and binning](#step-6-filtering-and-binning)
+    - [Step 7 Reciprocal Best find](#step-7-reciprocal-best-find)
+    - [Step 8 Clustering](#step-8-clustering)
+      - [optoin 1: Single Linkage Clustering (select `-w 'none'` in Step 6)](#optoin-1-single-linkage-clustering-select--w-none-in-step-6)
+      - [option 2: MCL](#option-2-mcl)
+    - [Step 9 Write clusters into FASTA](#step-9-write-clusters-into-fasta)
+  - [OrthoSLC ToolKit (OthoSLC_TK)](#orthoslc-toolkit-othoslc_tk)
+    - [What I do:](#what-i-do)
+      - [I align each strict core cluster:](#i-align-each-strict-core-cluster)
+      - [I concatenate aligned clusters into single copy core genome.](#i-concatenate-aligned-clusters-into-single-copy-core-genome)
+      - [I calculate SNP count all pairwise:](#i-calculate-snp-count-all-pairwise)
+
 **OrthoSLC ToolKit (OthoSLC_TK, at bottom of this page)**: From V1.0.0 onwards, we provide `OthoSLC_TK` to assist some downstream related tasks like MSA, construction of single copy core genome, calculating all pairwise SNP count.
 
 `OrthoSLC` is: <br>
