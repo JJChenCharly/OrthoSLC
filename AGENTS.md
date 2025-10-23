@@ -91,4 +91,4 @@
             """
             return torch.cdist(x, x, p=2)
     ```
-    * This will allow faster calculation.
+- Note to modify the final section about `OrthoSLC ToolKit (OthoSLC_TK)` of `README.md`. Expecially what one needs to run toolkits.
