@@ -1,15 +1,13 @@
-from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
-from Bio.Seq import Seq
 import pandas as pd
 
-import sys#, getopt
 import argparse
 import os
-from pathlib import Path
 
 from itertools import combinations
 from multiprocessing import Process, Manager
+
+import numpy as np
 
 from OrthoSLC import __version__, mission_spliter
 
@@ -39,40 +37,85 @@ args, extras = p.parse_known_args()
 
 kaligned_path = args.input_path
 
-def get_distance(str1, str2):
-    if str1 == str2:
-        return 0
-    d = 0
-    l = len(str1)
-    
-    for c in range(l):
-        if str1[c] != str2[c]:
-            d = d + 1
-            
-    return d
+CONV_DICT = {
+    "A": [1.0, 0.0, 0.0, 0.0],
+    "T": [0.0, 1.0, 0.0, 0.0],
+    "C": [0.0, 0.0, 1.0, 0.0],
+    "G": [0.0, 0.0, 0.0, 1.0],
+    "Y": [0.0, 0.5, 0.5, 0.0],
+    "R": [0.5, 0.0, 0.0, 0.5],
+    "S": [0.0, 0.0, 0.5, 0.5],
+    "W": [0.5, 0.5, 0.0, 0.0],
+    "K": [0.0, 0.5, 0.0, 0.5],
+    "M": [0.5, 0.0, 0.5, 0.0],
+    "B": [0.0, 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0],
+    "D": [1.0 / 3.0, 1.0 / 3.0, 0.0, 1.0 / 3.0],
+    "H": [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0, 0.0],
+    "V": [1.0 / 3.0, 0.0, 1.0 / 3.0, 1.0 / 3.0],
+    "N": [0.25, 0.25, 0.25, 0.25],
+    "-": [0.0, 0.0, 0.0, 0.0],
+}
+
+
+def encode_sequence(sequence):
+    """Convert a DNA sequence to a flattened numerical representation."""
+
+    try:
+        encoded = np.array([CONV_DICT[base.upper()] for base in sequence], dtype=np.float32)
+    except KeyError as exc:
+        raise ValueError(f"Unsupported base '{exc.args[0]}' encountered in sequence.") from exc
+
+    return encoded.reshape(-1)
+
+
+def pairwise_l2_distance(vectors):
+    """Compute pairwise L2 distance matrix for the provided vectors."""
+
+    if not vectors:
+        return np.empty((0, 0), dtype=np.float32)
+
+    mat = np.vstack(vectors).astype(np.float32)
+    sq_norms = np.sum(mat ** 2, axis=1, keepdims=True)
+    dist_sq = sq_norms - 2 * mat @ mat.T + sq_norms.T
+    np.maximum(dist_sq, 0, out=dist_sq)
+    return np.sqrt(dist_sq, out=dist_sq)
 
 def distance_in_one_cluster(in_path_ls, 
                             share_ls, 
                             loop_ls, 
                             total_len):
+    species_order = sorted({sid for sid_pair in loop_ls for sid in sid_pair})
+
     for in_path in in_path_ls:
         in_fasta = SeqIO.to_dict(SeqIO.parse(kaligned_path + '/' + in_path,
                                              'fasta'))
 
+        spe_dict = {x[0:x.index('-')]: x for x in in_fasta.keys()}
 
-        spe_dict = {x[0:x.index('-')]:x for x in in_fasta.keys()} # !!!!!!!!!!!!!
+        encoded_vectors = []
+        cluster_seq_len = None
+        for sid in species_order:
+            record_id = spe_dict.get(sid)
+            if record_id is None:
+                raise KeyError(f"Sequence for species '{sid}' missing in alignment '{in_path}'.")
+
+            seq = str(in_fasta[record_id].seq)
+            if cluster_seq_len is None:
+                cluster_seq_len = len(seq)
+
+            encoded_vectors.append(encode_sequence(seq))
+
+        distance_matrix = pairwise_l2_distance(encoded_vectors)
+        species_index = {sid: idx for idx, sid in enumerate(species_order)}
 
         result_dict = {}
 
-        for x in loop_ls:
-            snp=get_distance(str(in_fasta[spe_dict[x[0]]].seq),
-                             str(in_fasta[spe_dict[x[1]]].seq)
-                            )
-            result_dict[x] = snp
+        for pair in loop_ls:
+            idx_a = species_index[pair[0]]
+            idx_b = species_index[pair[1]]
+            result_dict[pair] = distance_matrix[idx_a, idx_b]
 
-        cluster_len = len(str(in_fasta[spe_dict[x[1]]].seq))
-
-        total_len.append(cluster_len)
+        total_len.append(cluster_seq_len)
         share_ls.append(result_dict)
 
 if __name__ == '__main__':
