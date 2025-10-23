@@ -497,6 +497,7 @@ options:
 # OrthoSLC ToolKit (OthoSLC_TK)
 To run `OthoSLC_TK`, you may need:
 * [`Biopython`](https://pypi.org/project/biopython/)
+* [`NumPy`](https://numpy.org/)
 * [`Pandas`](https://pypi.org/project/pandas/)
 * [`kalign`](https://github.com/timolassmann/kalign) (accept only V3.3.4)
 * [`mafft`](https://mafft.cbrc.jp/alignment/software/)
@@ -546,3 +547,4 @@ python3 ./bins/TK_SNPmat.py \
 -T ./test_output/Step1_op.txt \
 -u 10
 ```
+The SNP matrix workflow now converts aligned sequences into NumPy-based fractional one-hot vectors and reports L2 distances for every strain pair, allowing ambiguity-aware SNP summaries without introducing extra heavy dependencies.
