@@ -4,9 +4,7 @@ import pandas as pd
 import argparse
 from pathlib import Path
 
-from itertools import combinations
 from multiprocessing import Pool
-from collections import defaultdict
 
 import numpy as np
 
@@ -40,12 +38,12 @@ kaligned_path = args.input_path
 
 def _init_worker(base_path, species_order):
     """Store shared configuration for worker processes."""
-    global _KALIGNED_PATH, _SPECIES_ORDER, _PAIR_INDEX
+    global _KALIGNED_PATH, _SPECIES_ORDER, _PAIR_INDEX, _TRIU_INDICES
 
     _KALIGNED_PATH = base_path
     _SPECIES_ORDER = species_order
-    _PAIR_INDEX = [(i, j) for i in range(len(species_order))
-                   for j in range(i + 1, len(species_order))]
+    _TRIU_INDICES = np.triu_indices(len(species_order), k=1)
+    _PAIR_INDEX = list(zip(_TRIU_INDICES[0], _TRIU_INDICES[1]))
 
 
 def _encode_sequence(sequence: str) -> np.ndarray:
@@ -83,12 +81,7 @@ def _process_alignment(filename: str):
     diff_matrix = ordered_matrix[:, None, :] != ordered_matrix[None, :, :]
     snp_matrix = diff_matrix.sum(axis=2, dtype=np.int32)
 
-    pair_counts = {
-        (_SPECIES_ORDER[i], _SPECIES_ORDER[j]): int(snp_matrix[i, j])
-        for i, j in _PAIR_INDEX
-    }
-
-    return pair_counts, ordered_matrix.shape[1]
+    return snp_matrix[_TRIU_INDICES].astype(np.int64, copy=False)
 
 if __name__ == '__main__':
     procc_num = int(args.resource_total)
@@ -113,11 +106,18 @@ if __name__ == '__main__':
               initargs=(str(kaligned_dir), species_ids)) as pool:
         results = pool.map(_process_alignment, input_files)
 
-    sum_snp = defaultdict(int)
+    if not results:
+        raise RuntimeError("No SNP counts were produced by worker processes.")
 
-    for pair_counts, _ in results:
-        for key, value in pair_counts.items():
-            sum_snp[key] += value
+    pair_totals = np.sum(np.stack(results, axis=0, dtype=np.int64), axis=0)
+
+    pair_labels = [
+        (species_ids[i], species_ids[j])
+        for i in range(len(species_ids))
+        for j in range(i + 1, len(species_ids))
+    ]
+
+    sum_snp = dict(zip(pair_labels, pair_totals.tolist()))
 
 SLC_path_1 = args.ID_TSV
 
@@ -126,29 +126,22 @@ df_SLC_1 = pd.read_csv(SLC_path_1, sep = "\t"
                        , index_col = 0)
 dict_kalign_id = df_SLC_1[1].to_dict()
 
-sum_snp_4_2 = {(dict_kalign_id[int(k[0])], dict_kalign_id[int(k[1])]): v for k, v in sum_snp.items()}
-sum_snp_4_2 = dict(sorted(sum_snp_4_2.items()))
+sum_snp_4_2 = {
+    (dict_kalign_id[int(k[0])], dict_kalign_id[int(k[1])]): v
+    for k, v in sum_snp.items()
+}
 
 strain_naams = list(df_SLC_1[1])
-df_mat = pd.DataFrame(0
-                      , index=strain_naams
-                      , columns=strain_naams
-                     , dtype=np.int64
-                     )
-df_mat.index = strain_naams
-df_mat.columns = strain_naams
+index_lookup = {strain: idx for idx, strain in enumerate(strain_naams)}
 
-cbn = list(combinations(strain_naams,
-                        2
-                   ))
-for pairs in cbn:
-    if (pairs[0], pairs[1]) in sum_snp_4_2.keys():
-        value = int(round(sum_snp_4_2[(pairs[0], pairs[1])]))
-        df_mat.loc[pairs[1], pairs[0]] = value
-        df_mat.loc[pairs[0], pairs[1]] = value
-    elif (pairs[1], pairs[0]) in sum_snp_4_2.keys():
-        value = int(round(sum_snp_4_2[(pairs[1], pairs[0])]))
-        df_mat.loc[pairs[1], pairs[0]] = value
-        df_mat.loc[pairs[0], pairs[1]] = value
+matrix = np.zeros((len(strain_naams), len(strain_naams)), dtype=np.int64)
+for (strain_a, strain_b), value in sum_snp_4_2.items():
+    i = index_lookup[strain_a]
+    j = index_lookup[strain_b]
+    rounded_value = int(round(value))
+    matrix[i, j] = rounded_value
+    matrix[j, i] = rounded_value
+
+df_mat = pd.DataFrame(matrix, index=strain_naams, columns=strain_naams)
 
 df_mat.iloc[1:, 0: -1].to_csv(args.output_csv)
