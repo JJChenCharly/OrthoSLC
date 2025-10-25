@@ -1,17 +1,16 @@
-from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
-from Bio.Seq import Seq
 import pandas as pd
 
-import sys#, getopt
 import argparse
-import os
 from pathlib import Path
 
 from itertools import combinations
-from multiprocessing import Process, Manager
+from multiprocessing import Pool
+from collections import defaultdict
 
-from OrthoSLC import __version__, mission_spliter
+import numpy as np
+
+from OrthoSLC import __version__
 
 p = argparse.ArgumentParser(
     prog="python3 TK_SNPmat.py",
@@ -39,85 +38,88 @@ args, extras = p.parse_known_args()
 
 kaligned_path = args.input_path
 
-def get_distance(str1, str2):
-    if str1 == str2:
-        return 0
-    d = 0
-    l = len(str1)
-    
-    for c in range(l):
-        if str1[c] != str2[c]:
-            d = d + 1
-            
-    return d
+def _init_worker(base_path, species_order):
+    """Store shared configuration for worker processes."""
+    global _KALIGNED_PATH, _SPECIES_ORDER, _PAIR_INDEX
 
-def distance_in_one_cluster(in_path_ls, 
-                            share_ls, 
-                            loop_ls, 
-                            total_len):
-    for in_path in in_path_ls:
-        in_fasta = SeqIO.to_dict(SeqIO.parse(kaligned_path + '/' + in_path,
-                                             'fasta'))
+    _KALIGNED_PATH = base_path
+    _SPECIES_ORDER = species_order
+    _PAIR_INDEX = [(i, j) for i in range(len(species_order))
+                   for j in range(i + 1, len(species_order))]
 
 
-        spe_dict = {x[0:x.index('-')]:x for x in in_fasta.keys()} # !!!!!!!!!!!!!
+def _encode_sequence(sequence):
+    """Convert a nucleotide sequence into a numpy byte array."""
+    encoded = np.frombuffer(sequence.upper().encode("ascii"), dtype="S1")
+    return encoded
 
-        result_dict = {}
 
-        for x in loop_ls:
-            snp=get_distance(str(in_fasta[spe_dict[x[0]]].seq),
-                             str(in_fasta[spe_dict[x[1]]].seq)
-                            )
-            result_dict[x] = snp
+def _process_alignment(filename):
+    """Compute pairwise SNP counts for a single alignment file."""
+    filepath = Path(_KALIGNED_PATH) / filename
+    fasta_records = SeqIO.to_dict(SeqIO.parse(filepath, "fasta"))
 
-        cluster_len = len(str(in_fasta[spe_dict[x[1]]].seq))
+    sequence_bytes = {}
+    for record_id, record in fasta_records.items():
+        if "-" not in record_id:
+            raise ValueError(
+                f"Record id '{record_id}' in '{filepath}' does not contain '-' separator."
+            )
+        species_id = record_id.split("-", 1)[0]
+        sequence_bytes[species_id] = _encode_sequence(str(record.seq))
 
-        total_len.append(cluster_len)
-        share_ls.append(result_dict)
+    missing_species = [sid for sid in _SPECIES_ORDER if sid not in sequence_bytes]
+    if missing_species:
+        raise KeyError(
+            f"Alignment '{filepath}' is missing sequences for: {', '.join(missing_species)}"
+        )
+
+    seq_len_set = {len(seq) for seq in sequence_bytes.values()}
+    if len(seq_len_set) != 1:
+        raise ValueError(
+            f"Alignment '{filepath}' contains sequences with inconsistent lengths: {seq_len_set}"
+        )
+
+    ordered_matrix = np.vstack([sequence_bytes[sid] for sid in _SPECIES_ORDER])
+    # Compute pairwise Hamming distances using vectorized comparison
+    diff_matrix = ordered_matrix[:, None, :] != ordered_matrix[None, :, :]
+    snp_matrix = diff_matrix.sum(axis=2, dtype=np.int32)
+
+    pair_counts = {
+        (_SPECIES_ORDER[i], _SPECIES_ORDER[j]): int(snp_matrix[i, j])
+        for i, j in _PAIR_INDEX
+    }
+
+    return pair_counts, ordered_matrix.shape[1]
 
 if __name__ == '__main__':
     procc_num = int(args.resource_total)
-    
-    mission_ls = mission_spliter(os.listdir(kaligned_path), procc_num)
-    
-    manager = Manager()
-    return_dict_ls = manager.list()
-    len_ls = manager.list()
-    
-    a_fasta = SeqIO.parse(kaligned_path + '/' + os.listdir(kaligned_path)[0], 'fasta')
-    a_ls = [x.id[0: x.id.index('-')] for x in a_fasta]
-    a_ls.sort()
-    
-    par_ls = list(combinations(a_ls, 2))
-    
-    for submissions in mission_ls:
-    
-        jobs = []
 
-        p = Process(target = distance_in_one_cluster,
-                    args = (submissions, 
-                            return_dict_ls,
-                            par_ls,
-                            len_ls
-                           )
+    kaligned_dir = Path(kaligned_path)
+    input_files = sorted(
+        [f.name for f in kaligned_dir.iterdir() if f.is_file() and not f.name.startswith('.')]
+    )
 
-                   )
-        p.start()
-        jobs.append(p)
+    if not input_files:
+        raise FileNotFoundError(f"No alignment files found under '{kaligned_path}'.")
 
+    first_file = kaligned_dir / input_files[0]
+    species_ids = sorted(
+        record.id.split("-", 1)[0]
+        for record in SeqIO.parse(first_file, "fasta")
+    )
 
-    for z in jobs:
-        z.join()
-    return_dict_ls = list(return_dict_ls)
+    worker_count = max(1, min(procc_num, len(input_files)))
 
-#add up all the snp number
-sum_snp = {}
-for key in return_dict_ls[0]: #prepare a dict to save snp number
-    sum_snp[key] = 0
-    
-for i in return_dict_ls:
-    for key in sum_snp:
-        sum_snp[key] = sum_snp[key] + i[key]
+    with Pool(processes=worker_count, initializer=_init_worker,
+              initargs=(str(kaligned_dir), species_ids)) as pool:
+        results = pool.map(_process_alignment, input_files)
+
+    sum_snp = defaultdict(int)
+
+    for pair_counts, _ in results:
+        for key, value in pair_counts.items():
+            sum_snp[key] += value
 
 SLC_path_1 = args.ID_TSV
 
@@ -133,6 +135,7 @@ strain_naams = list(df_SLC_1[1])
 df_mat = pd.DataFrame(0
                       , index=strain_naams
                       , columns=strain_naams
+                     , dtype=np.int64
                      )
 df_mat.index = strain_naams
 df_mat.columns = strain_naams
@@ -142,8 +145,12 @@ cbn = list(combinations(strain_naams,
                    ))
 for pairs in cbn:
     if (pairs[0], pairs[1]) in sum_snp_4_2.keys():
-        df_mat.loc[pairs[1], pairs[0]] = sum_snp_4_2[(pairs[0], pairs[1])]
+        value = int(round(sum_snp_4_2[(pairs[0], pairs[1])]))
+        df_mat.loc[pairs[1], pairs[0]] = value
+        df_mat.loc[pairs[0], pairs[1]] = value
     elif (pairs[1], pairs[0]) in sum_snp_4_2.keys():
-        df_mat.loc[(pairs[1], pairs[0])] = sum_snp_4_2[(pairs[1], pairs[0])]
+        value = int(round(sum_snp_4_2[(pairs[1], pairs[0])]))
+        df_mat.loc[pairs[1], pairs[0]] = value
+        df_mat.loc[pairs[0], pairs[1]] = value
 
 df_mat.iloc[1:, 0: -1].to_csv(args.output_csv)
