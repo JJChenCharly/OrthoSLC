@@ -547,4 +547,4 @@ python3 ./bins/TK_SNPmat.py \
 -T ./test_output/Step1_op.txt \
 -u 10
 ```
-The SNP matrix workflow now converts aligned sequences into NumPy-based fractional one-hot vectors and reports L2 distances for every strain pair, allowing ambiguity-aware SNP summaries without introducing extra heavy dependencies.
+The SNP matrix workflow compares aligned sequences position-by-position with NumPy and reports pairwise SNP mismatch counts (Hamming-style distance) for every strain pair.
